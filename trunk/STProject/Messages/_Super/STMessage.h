@@ -13,26 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef NSMESSAGE_H_
-#define NSMESSAGE_H_
+#ifndef STMESSAGE_H_
+#define STMESSAGE_H_
 
+/*
+ * This is the superclass of all the Messages as we discussed. It will feature all types of the derivated messages, and it will provide a "type" check mechanism.
+ */
 #include <cmessage.h>
-#include "STNode.h"
 
-class NSMessage: public cMessage {
+class STMessage: public cMessage {
 public:
-	NSMessage();
-	NSMessage(STNode* requester);
-	virtual ~NSMessage();
+	STMessage();
+	virtual ~STMessage();
 
-	void setRequesterNode(STNode* r);
-	STNode* getRequester();
+	int getType();
 
-	void setRequestedNode(STNode* r);
-	STNode* getRequestedNode();
+	static const int NAME_SERVER_MSG = 0;
+	static const int CONNECTION_REQUEST_MSG = 1;
+
 private:
-	STNode* requester;
-	STNode* requested;
+	int messageType;
 };
 
-#endif /* NSMESSAGE_H_ */
+#endif /* STMESSAGE_H_ */
