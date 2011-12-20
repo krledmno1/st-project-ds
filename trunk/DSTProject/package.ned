@@ -1,0 +1,3 @@
+package dstproject;
+
+@license(LGPL);
