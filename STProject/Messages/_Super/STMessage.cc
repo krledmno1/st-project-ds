@@ -13,21 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef CONNECTIONREQUESTMESSAGE_H_
-#define CONNECTIONREQUESTMESSAGE_H_
+#include "STMessage.h"
 
-#include <cmessage.h>
-#include <cGate.h>
+STMessage::STMessage() {}
+STMessage::~STMessage() {}
 
-class ConnectionRequestMessage: public cMessage {
-public:
-	ConnectionRequestMessage(cGate* requesterGate, bool isClient);
-	virtual ~ConnectionRequestMessage();
-	cGate* getRequesterGate();
-	bool isClient();
-private:
-	cGate* requesterGate;
-	bool isCli;
-};
-
-#endif /* CONNECTIONREQUESTMESSAGE_H_ */
+int STMessage::getType(){
+	return messageType;
+}
