@@ -1,12 +1,12 @@
 #
-# OMNeT++/OMNEST Makefile for DSTProject
+# OMNeT++/OMNEST Makefile for STProject
 #
 # This file was generated with the command:
 #  opp_makemake -f --deep -O out
 #
 
 # Name of target to be created (-o option)
-TARGET = DSTProject$(EXE_SUFFIX)
+TARGET = STProject$(EXE_SUFFIX)
 
 # User interface (uncomment one) (-u option)
 USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(CMDENV_LIBS)
@@ -121,7 +121,7 @@ msgheaders: $(MSGFILES:.msg=_m.h)
 
 clean:
 	-rm -rf $O
-	-rm -f DSTProject DSTProject.exe libDSTProject.so libDSTProject.a libDSTProject.dll libDSTProject.dylib
+	-rm -f STProject STProject.exe libSTProject.so libSTProject.a libSTProject.dll libSTProject.dylib
 	-rm -f ./*_m.cc ./*_m.h
 	-rm -f Brokers/*_m.cc Brokers/*_m.h
 	-rm -f Brokers/brokersContainer/*_m.cc Brokers/brokersContainer/*_m.h

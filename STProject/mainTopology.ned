@@ -13,12 +13,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package dstproject;
+package stproject;
 
 simple Client
 {
     parameters:
         volatile double WakeUpDelay @unit(s) = default(uniform(0s, 60s));
+        volatile double SleepDelay @unit(s) = default(uniform(0s, 60s));
     @display("i=device/laptop");
     gates:
         input in;
