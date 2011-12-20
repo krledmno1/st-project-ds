@@ -28,13 +28,7 @@ void BrokersList::addBroker(Broker* b){
 		rootNode = new ListNode(b);
 		size = 1;
 	} else { //we already have a root node. Anyway, we add this new Broker to the head of the list
-		if (rootNode->getBroker()==b) {
-			EV << "I already have this broker";
-		}
 		ListNode* newRoot = new ListNode(b);
-		if (newRoot->getBroker()==rootNode->getBroker()){
-			EV << "Si aici avem acelasi broker";
-		}
 		newRoot->setNextNode(rootNode);
 		rootNode = newRoot;
 		size++;
@@ -64,15 +58,8 @@ Broker* BrokersList::getBroker(int index){
 	ListNode* in = rootNode;
 	int i = 0;
 	while (i<index && in->getNextNode()!=NULL){
-		EV << "Going inner\n";
 		in = in->getNextNode();
 		i++;
-	}
-	if (in==rootNode){
-		EV << "I'm returning the root \n";
-	}
-	if (in->getBroker()==rootNode->getBroker()){
-		EV << "Target got the same broker as the root \n";
 	}
 	return in->getBroker();
 }

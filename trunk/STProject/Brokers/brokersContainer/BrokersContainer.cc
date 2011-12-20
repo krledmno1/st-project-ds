@@ -16,7 +16,7 @@
 #include "BrokersContainer.h"
 #include "BCNode.h"
 
-int BrokersList::getSize(){return size;}
+int BrokersContainer::getSize(){return size;}
 
 BrokersContainer::BrokersContainer() {
 	size = 0;

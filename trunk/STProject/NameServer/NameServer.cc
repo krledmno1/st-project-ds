@@ -33,10 +33,8 @@ void NameServer::handleMessage(cMessage* msg){
 	NSMessage* ns = dynamic_cast<NSMessage*>(msg);
 	if (ns==NULL){return;}
 	if (dynamic_cast<Broker*>(ns->getRequester())!=NULL){
-		EV << "Going on broker side";
 		handleBrokerRequest(ns);
 	} else if (dynamic_cast<Client*>(ns->getRequester())!=NULL){
-		EV << "Going on client side";
 		handleClientRequest(ns);
 	}
 }
@@ -44,14 +42,13 @@ void NameServer::handleMessage(cMessage* msg){
 void NameServer::handleBrokerRequest(NSMessage* msg){
 	int index;
 	if (bList->getSize()>1){
-		index = rand()%bList->getSize();
+		index = rand()%bList->getSize()-1;
 	} else {
 		index = 0;
 	}
-	//char str[10];
+	//char str[10]; ->>> diagnostics
 	//bubble(itoa(index, str, 10));
 	msg->setRequestedNode(bList->getBroker(index));
-	//msg->setRequestedNode(bList->getBroker(0));
 	Broker* b = dynamic_cast<Broker*>(msg->getRequester());
 	sendDirect(msg,b->gate("updIn"));
 	bList->addBroker(dynamic_cast<Broker*>(msg->getRequester()));

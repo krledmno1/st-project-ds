@@ -16,6 +16,8 @@
 #ifndef BCNODE_H_
 #define BCNODE_H_
 
+#include "cgate.h"
+
 class BCNode {
 public:
 	BCNode(cGate* b);
