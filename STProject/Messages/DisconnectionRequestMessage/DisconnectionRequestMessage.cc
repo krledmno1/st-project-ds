@@ -16,6 +16,7 @@
 #include "DisconnectionRequestMessage.h"
 
 DisconnectionRequestMessage::DisconnectionRequestMessage(cGate* rig) {
+	messageType = DISCONNECTION_REQUEST_MSG;
 	requesterInputGate = rig;
 }
 

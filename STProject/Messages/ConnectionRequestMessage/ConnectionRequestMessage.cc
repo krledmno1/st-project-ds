@@ -16,6 +16,7 @@
 #include "ConnectionRequestMessage.h"
 
 ConnectionRequestMessage::ConnectionRequestMessage(cGate* rg, bool ic) {
+	messageType = CONNECTION_REQUEST_MSG;
 	requesterInputGate = rg;
 	isCli = ic;
 }

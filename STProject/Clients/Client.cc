@@ -28,43 +28,48 @@ Client::~Client() {
 	cancelAndDelete(sleepMsg);
 }
 
-void Client::initialize(){
-	scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
+void Client::initialize() {
+	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
 }
-void Client::handleMessage(cMessage *msg){
-	if (msg==wakeUpMsg){
+void Client::handleMessage(cMessage *msg) {
+	if (msg == wakeUpMsg) {
 		wakeUp();
-	} else if (msg==sleepMsg){
-		//disconnect, and wait until he wakes up again
-		//we first send through the existing channel the request to the other party to disconnect his "way". Equivalent to gate("in")->disconnect(); which unfortunately doesn't work. Seems that only outPut gates can disconnect
-		send(new DisconnectionRequestMessage(gate("in")),gate("out"));
-		gate("out")->disconnect();
-		//gate("in")->disconnect();
-		scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
-	} else if (dynamic_cast<NSMessage*>(msg)!=NULL){
-		NSMessage* replyMsg = dynamic_cast<NSMessage*>(msg);
-		Broker* requestedNode = dynamic_cast<Broker*>(replyMsg->getRequestedNode());//instead of casting the message I use directly request object
-		if (requestedNode==NULL){//try later
-			scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
-			return;
-		}
-		cGate* myGate = gate("out");
-		cGate* hisGate = requestedNode->getFreeInputGate();
-		if (myGate == NULL || hisGate == NULL){ //try later
-			scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
-			return;
-		}
-		myGate->connectTo(hisGate);
-		send(new ConnectionRequestMessage(gate("in"),true),myGate);
-		EV << "I should have sent a new Message \n";
-		cancelAndDelete(replyMsg);
-		//now "decide" for how long it will run
-		scheduleAt(simTime()+par("SleepDelay"),sleepMsg);
+	} else if (msg == sleepMsg) {
+		goSleep();
+	} else if (dynamic_cast<NSMessage*>(msg) != NULL) {
+		handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
 	} else {
 		EV << "Unrecognized message type \n";
 	}
 }
 
-void Client::wakeUp(){
-	sendDirect(new NSMessage(dynamic_cast<STNode*>(this)),getNSGate());
+void Client::wakeUp() {
+	sendDirect(new NSMessage(dynamic_cast<STNode*>(this)), getNSGate());
+}
+
+void Client::goSleep() {
+	//disconnect, and wait until he wakes up again
+	//we first send through the existing channel the request to the other party to disconnect his "way". Equivalent to gate("in")->disconnect(); which unfortunately doesn't work. Seems that only outPut gates can disconnect
+	send(new DisconnectionRequestMessage(gate("in")), gate("out"));
+	gate("out")->disconnect();
+	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+}
+
+void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we get from NS when we ask for a broker
+	Broker* requestedNode = dynamic_cast<Broker*>(nsm->getRequestedNode()); //instead of casting the message I use directly request object
+	if (requestedNode == NULL) { //try later
+		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+		return;
+	}
+	cGate* myGate = gate("out");
+	cGate* hisGate = requestedNode->getFreeInputGate();
+	if (myGate == NULL || hisGate == NULL) { //try later
+		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+		return;
+	}
+	myGate->connectTo(hisGate);
+	send(new ConnectionRequestMessage(gate("in"), true), myGate);
+	cancelAndDelete(nsm);
+	//now "decide" for how long it will run
+	scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
 }

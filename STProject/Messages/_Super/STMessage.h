@@ -30,8 +30,9 @@ public:
 
 	static const int NAME_SERVER_MSG = 0;
 	static const int CONNECTION_REQUEST_MSG = 1;
+	static const int DISCONNECTION_REQUEST_MSG = 2;
 
-private:
+protected:
 	int messageType;
 };
 

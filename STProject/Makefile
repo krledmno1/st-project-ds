@@ -191,6 +191,8 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Brokers/Broker.h \
 	Brokers/clientsContainer/CCNode.h \
 	Brokers/clientsContainer/ClientsMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	ST/Node/STNode.h
@@ -201,6 +203,8 @@ $O/NameServer/NameServer.o: NameServer/NameServer.cc \
 	Brokers/clientsContainer/CCNode.h \
 	Brokers/clientsContainer/ClientsMap.h \
 	Clients/Client.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	NameServer/BrokersList/BrokersList.h \
@@ -211,6 +215,8 @@ $O/NameServer/BrokersList/BrokersList.o: NameServer/BrokersList/BrokersList.cc \
 	Brokers/Broker.h \
 	Brokers/clientsContainer/CCNode.h \
 	Brokers/clientsContainer/ClientsMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	NameServer/BrokersList/BrokersList.h \
@@ -220,6 +226,8 @@ $O/NameServer/BrokersList/ListNode.o: NameServer/BrokersList/ListNode.cc \
 	Brokers/Broker.h \
 	Brokers/clientsContainer/CCNode.h \
 	Brokers/clientsContainer/ClientsMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	NameServer/BrokersList/ListNode.h \

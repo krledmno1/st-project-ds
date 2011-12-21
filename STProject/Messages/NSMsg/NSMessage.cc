@@ -27,6 +27,7 @@
 	STNode* NSMessage::getRequestedNode(){return requested;}
 //___________Construct
 NSMessage::NSMessage() {
+	messageType = NAME_SERVER_MSG;
 }
 NSMessage::NSMessage(STNode *_requester){
 	requester = _requester;
