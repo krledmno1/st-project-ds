@@ -29,8 +29,9 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 private:
-	NSMessage* request;
 	void wakeUp();
+	void goSleep();
+	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
 };
 
 #endif /* CLIENT_H_ */

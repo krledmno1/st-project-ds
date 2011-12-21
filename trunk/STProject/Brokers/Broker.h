@@ -17,8 +17,10 @@
 #define BROKER_H_
 
 #include "STNode.h"
-#include "NSMessage.h"
 #include "ClientsMap.h"
+#include "NSMessage.h"
+#include "ConnectionRequestMessage.h"
+#include "DisconnectionRequestMessage.h"
 
 class Broker: public STNode {
 public:
@@ -30,8 +32,10 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 private:
-	NSMessage* request;
 	void wakeUp();
+	void handleNameServerMessage(NSMessage* nsm);
+	void handleConnectionRequest(ConnectionRequestMessage* crm);
+	void handleDisconnectionRequest(DisconnectionRequestMessage* drm);
 	ClientsMap* clientsMap;
 };
 
