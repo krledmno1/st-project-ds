@@ -16,10 +16,13 @@
 #include "Broker.h"
 #include "NSMessage.h"
 #include "ConnectionRequestMessage.h"
+#include "DisconnectionRequestMessage.h"
 
 Define_Module(Broker);
 
-Broker::Broker() {}
+Broker::Broker() {
+	clientsMap = new ClientsMap();
+}
 Broker::~Broker() {
 	cancelAndDelete(wakeUpMsg);
 }
@@ -51,7 +54,16 @@ void Broker::handleMessage(cMessage *msg){
 		ConnectionRequestMessage* crm = dynamic_cast<ConnectionRequestMessage*>(msg);
 		cGate* outGate = getFreeOutputGate();
 		outGate->connectTo(crm->getRequesterGate());
+		if (crm->isClient()){
+			clientsMap->addMapping(outGate,crm->getRequesterGate());
+		}
 		//EV << "Fuck my laptop!!\n";
+	} else if (dynamic_cast<DisconnectionRequestMessage*>(msg)!=NULL){
+		DisconnectionRequestMessage* drm = dynamic_cast<DisconnectionRequestMessage*>(msg);
+		cGate* myOutputGate = clientsMap->getBrokerOutPutGate(drm->getRequesterInputGate());
+		myOutputGate->disconnect();
+		clientsMap->removeMapping(myOutputGate);
+		cancelAndDelete(msg);
 	}
 }
 

@@ -13,21 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef CONNECTIONREQUESTMESSAGE_H_
-#define CONNECTIONREQUESTMESSAGE_H_
+#include "DisconnectionRequestMessage.h"
 
-#include "STMessage.h"
-#include <cGate.h>
+DisconnectionRequestMessage::DisconnectionRequestMessage(cGate* rig) {
+	requesterInputGate = rig;
+}
 
-class ConnectionRequestMessage: public STMessage {
-public:
-	ConnectionRequestMessage(cGate* requesterGate, bool isClient);
-	virtual ~ConnectionRequestMessage();
-	cGate* getRequesterGate();
-	bool isClient();
-private:
-	cGate* requesterInputGate;
-	bool isCli;
-};
+DisconnectionRequestMessage::~DisconnectionRequestMessage() {}
 
-#endif /* CONNECTIONREQUESTMESSAGE_H_ */
+cGate* DisconnectionRequestMessage::getRequesterInputGate(){
+	return requesterInputGate;
+}

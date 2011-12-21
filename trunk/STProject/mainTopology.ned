@@ -53,8 +53,8 @@ simple NameServer
 network STNetwork
 {
     parameters:
-        int nrClients = default(3);
-        int nrBrokers = default(9);
+        int nrClients = default(12);
+        int nrBrokers = default(4);
 
         @display("bgb=914,370");
     submodules:

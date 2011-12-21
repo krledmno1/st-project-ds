@@ -13,21 +13,20 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef CONNECTIONREQUESTMESSAGE_H_
-#define CONNECTIONREQUESTMESSAGE_H_
+#ifndef DISCONNECTIONREQUESTMESSAGE_H_
+#define DISCONNECTIONREQUESTMESSAGE_H_
 
 #include "STMessage.h"
-#include <cGate.h>
+#include "cgate.h"
 
-class ConnectionRequestMessage: public STMessage {
+class DisconnectionRequestMessage: public STMessage {
 public:
-	ConnectionRequestMessage(cGate* requesterGate, bool isClient);
-	virtual ~ConnectionRequestMessage();
-	cGate* getRequesterGate();
-	bool isClient();
+	DisconnectionRequestMessage(cGate* requesterInputGate);
+	virtual ~DisconnectionRequestMessage();
+
+	cGate* getRequesterInputGate();
 private:
-	cGate* requesterInputGate;
-	bool isCli;
+	cGate* requesterInputGate; //This gate is the inputGate of the requester
 };
 
-#endif /* CONNECTIONREQUESTMESSAGE_H_ */
+#endif /* DISCONNECTIONREQUESTMESSAGE_H_ */

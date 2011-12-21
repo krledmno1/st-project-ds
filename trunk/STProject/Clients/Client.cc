@@ -16,6 +16,7 @@
 #include "Client.h"
 #include "Broker.h"
 #include "ConnectionRequestMessage.h"
+#include "DisconnectionRequestMessage.h"
 
 Define_Module(Client);
 
@@ -35,11 +36,14 @@ void Client::handleMessage(cMessage *msg){
 		wakeUp();
 	} else if (msg==sleepMsg){
 		//disconnect, and wait until he wakes up again
+		//we first send through the existing channel the request to the other party to disconnect his "way". Equivalent to gate("in")->disconnect(); which unfortunately doesn't work. Seems that only outPut gates can disconnect
+		send(new DisconnectionRequestMessage(gate("in")),gate("out"));
 		gate("out")->disconnect();
-		gate("in")->disconnect();
+		//gate("in")->disconnect();
 		scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
-	} else if (msg == request){
-		Broker* requestedNode = dynamic_cast<Broker*>(request->getRequestedNode());//instead of casting the message I use directly request object
+	} else if (dynamic_cast<NSMessage*>(msg)!=NULL){
+		NSMessage* replyMsg = dynamic_cast<NSMessage*>(msg);
+		Broker* requestedNode = dynamic_cast<Broker*>(replyMsg->getRequestedNode());//instead of casting the message I use directly request object
 		if (requestedNode==NULL){//try later
 			scheduleAt(simTime()+par("WakeUpDelay"),wakeUpMsg);
 			return;
@@ -53,7 +57,7 @@ void Client::handleMessage(cMessage *msg){
 		myGate->connectTo(hisGate);
 		send(new ConnectionRequestMessage(gate("in"),true),myGate);
 		EV << "I should have sent a new Message \n";
-		cancelAndDelete(request);
+		cancelAndDelete(replyMsg);
 		//now "decide" for how long it will run
 		scheduleAt(simTime()+par("SleepDelay"),sleepMsg);
 	} else {
@@ -62,6 +66,5 @@ void Client::handleMessage(cMessage *msg){
 }
 
 void Client::wakeUp(){
-	request = new NSMessage(dynamic_cast<STNode*>(this));
-	sendDirect(request,getNSGate());
+	sendDirect(new NSMessage(dynamic_cast<STNode*>(this)),getNSGate());
 }

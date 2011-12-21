@@ -13,21 +13,25 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef CONNECTIONREQUESTMESSAGE_H_
-#define CONNECTIONREQUESTMESSAGE_H_
+#ifndef CCNODE_H_
+#define CCNODE_H_
+#include "cgate.h"
 
-#include "STMessage.h"
-#include <cGate.h>
-
-class ConnectionRequestMessage: public STMessage {
+class CCNode {
 public:
-	ConnectionRequestMessage(cGate* requesterGate, bool isClient);
-	virtual ~ConnectionRequestMessage();
-	cGate* getRequesterGate();
-	bool isClient();
+	CCNode(cGate* brokerOutputGate, cGate* clientInputGate);
+	virtual ~CCNode();
+
+	cGate* getBrokerOutputGate();
+	cGate* getClientInputGate();
+
+	CCNode* getNextNode();
+	void setNextNode(CCNode* ccn);
+
 private:
-	cGate* requesterInputGate;
-	bool isCli;
+	cGate* brokerOutputGate;
+	cGate* clientInputGate;
+	CCNode* nextNode;
 };
 
-#endif /* CONNECTIONREQUESTMESSAGE_H_ */
+#endif /* CCNODE_H_ */
