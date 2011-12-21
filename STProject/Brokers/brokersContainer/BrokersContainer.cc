@@ -43,11 +43,11 @@ void BrokersContainer::addBrokerGate(cGate* b){
 }
 
 void BrokersContainer::removeBrokerGate(cGate* b){
-	BCNode* prevNode = 0;
+	BCNode* prevNode = NULL;
 	BCNode* i = rootNode;
-	while(i!=0){
+	while(i!=NULL){
 		if (i->getBrokerGate()==b) { //we found it
-			if (prevNode==0){//we're dealing with the root
+			if (prevNode==NULL){//we're dealing with the root
 				rootNode = i->getNextNode();
 				size--;
 			} else { //we're somewhere in the list
@@ -60,6 +60,7 @@ void BrokersContainer::removeBrokerGate(cGate* b){
 		i = i->getNextNode();
 	}
 	//If I ever get here, I'm screwed. It means I didnt find the broker I was looking to remove (throw Exception? :D)
+	EV << "ERROR: Broker Container did not find the gate that had to be removed!";
 }
 cGate* BrokersContainer::getBrokerGate(int index){
 	if (size==0) return NULL;

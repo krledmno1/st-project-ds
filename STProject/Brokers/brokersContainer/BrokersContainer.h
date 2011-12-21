@@ -19,6 +19,14 @@
 #include "BCNode.h"
 #include "omnetpp.h"
 
+
+/*
+ * ______Linked List implementation
+ * This is a mapping between the owner brokers' output gates to the connected brokers' input gates
+ * This mapping will also manage the subscriptions incoming from other brokers.
+ * TODO UNFINISHED, and UNITILIZED (actually I dont think its even compiled...)
+ */
+
 class BrokersContainer {
 public:
 	BrokersContainer();

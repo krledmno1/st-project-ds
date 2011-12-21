@@ -16,13 +16,13 @@
 #include "ConnectionRequestMessage.h"
 
 ConnectionRequestMessage::ConnectionRequestMessage(cGate* rg, bool ic) {
-	requesterGate = rg;
+	requesterInputGate = rg;
 	isCli = ic;
 }
 ConnectionRequestMessage::~ConnectionRequestMessage() {}
 
 cGate* ConnectionRequestMessage::getRequesterGate(){
-	return requesterGate;
+	return requesterInputGate;
 }
 bool ConnectionRequestMessage::isClient(){
 	return isCli;

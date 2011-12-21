@@ -22,6 +22,7 @@ INCLUDE_PATH = \
     -IClients \
     -IMessages \
     -IMessages/ConnectionRequestMessage \
+    -IMessages/DisconnectionRequestMessage \
     -IMessages/NSMsg \
     -IMessages/_Super \
     -INameServer \
@@ -45,8 +46,11 @@ OBJS = \
     $O/Brokers/Broker.o \
     $O/Brokers/brokersContainer/BCNode.o \
     $O/Brokers/brokersContainer/BrokersContainer.o \
+    $O/Brokers/clientsContainer/CCNode.o \
+    $O/Brokers/clientsContainer/ClientsMap.o \
     $O/Clients/Client.o \
     $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o \
+    $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o \
     $O/Messages/NSMsg/NSMessage.o \
     $O/Messages/_Super/STMessage.o \
     $O/NameServer/NameServer.o \
@@ -133,6 +137,7 @@ clean:
 	-rm -f Clients/*_m.cc Clients/*_m.h
 	-rm -f Messages/*_m.cc Messages/*_m.h
 	-rm -f Messages/ConnectionRequestMessage/*_m.cc Messages/ConnectionRequestMessage/*_m.h
+	-rm -f Messages/DisconnectionRequestMessage/*_m.cc Messages/DisconnectionRequestMessage/*_m.h
 	-rm -f Messages/NSMsg/*_m.cc Messages/NSMsg/*_m.h
 	-rm -f Messages/_Super/*_m.cc Messages/_Super/*_m.h
 	-rm -f NameServer/*_m.cc NameServer/*_m.h
@@ -144,12 +149,15 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Brokers/*.cc Brokers/brokersContainer/*.cc Brokers/clientsContainer/*.cc Clients/*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc NameServer/*.cc NameServer/BrokersList/*.cc ST/*.cc ST/Node/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Brokers/*.cc Brokers/brokersContainer/*.cc Brokers/clientsContainer/*.cc Clients/*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc NameServer/*.cc NameServer/BrokersList/*.cc ST/*.cc ST/Node/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Brokers/Broker.o: Brokers/Broker.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	ST/Node/STNode.h
@@ -158,18 +166,31 @@ $O/Brokers/brokersContainer/BCNode.o: Brokers/brokersContainer/BCNode.cc \
 $O/Brokers/brokersContainer/BrokersContainer.o: Brokers/brokersContainer/BrokersContainer.cc \
 	Brokers/brokersContainer/BCNode.h \
 	Brokers/brokersContainer/BrokersContainer.h
+$O/Brokers/clientsContainer/CCNode.o: Brokers/clientsContainer/CCNode.cc \
+	Brokers/clientsContainer/CCNode.h
+$O/Brokers/clientsContainer/ClientsMap.o: Brokers/clientsContainer/ClientsMap.cc \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h
 $O/Clients/Client.o: Clients/Client.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Clients/Client.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	ST/Node/STNode.h
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/_Super/STMessage.h
+$O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o: Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.cc \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/_Super/STMessage.h
 $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	ST/Node/STNode.h
@@ -177,6 +198,8 @@ $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 	Messages/_Super/STMessage.h
 $O/NameServer/NameServer.o: NameServer/NameServer.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Clients/Client.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
@@ -186,6 +209,8 @@ $O/NameServer/NameServer.o: NameServer/NameServer.cc \
 	ST/Node/STNode.h
 $O/NameServer/BrokersList/BrokersList.o: NameServer/BrokersList/BrokersList.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	NameServer/BrokersList/BrokersList.h \
@@ -193,6 +218,8 @@ $O/NameServer/BrokersList/BrokersList.o: NameServer/BrokersList/BrokersList.cc \
 	ST/Node/STNode.h
 $O/NameServer/BrokersList/ListNode.o: NameServer/BrokersList/ListNode.cc \
 	Brokers/Broker.h \
+	Brokers/clientsContainer/CCNode.h \
+	Brokers/clientsContainer/ClientsMap.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
 	NameServer/BrokersList/ListNode.h \

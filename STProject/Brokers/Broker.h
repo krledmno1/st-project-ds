@@ -18,6 +18,7 @@
 
 #include "STNode.h"
 #include "NSMessage.h"
+#include "ClientsMap.h"
 
 class Broker: public STNode {
 public:
@@ -31,6 +32,7 @@ protected:
 private:
 	NSMessage* request;
 	void wakeUp();
+	ClientsMap* clientsMap;
 };
 
 #endif /* BROKER_H_ */
