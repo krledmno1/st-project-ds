@@ -18,19 +18,22 @@
 
 #include "STNode.h"
 #include "NSMessage.h"
-#include "BrokersList.h"
+#include <vector>
+#include "Broker.h"
 
 class NameServer: public STNode {
 public:
 	NameServer();
 	virtual ~NameServer();
 protected:
-	virtual void handleMessage(cMessage *msg);
+	virtual void handleMessage(cMessage* msg);
 	virtual void initialize();
 private:
-	BrokersList* bList;
+	//BrokersList* bList;
 	void handleBrokerRequest(NSMessage* msg);
 	void handleClientRequest(NSMessage* msg);
+
+	std::vector<Broker*> brokersVector;
 };
 
 #endif /* NAMESERVER_H_ */
