@@ -15,53 +15,75 @@
 
 #include "NameServer.h"
 #include "STNode.h"
-#include "BrokersList.h"
 #include "Client.h"
+#include <vector>
 
 Define_Module(NameServer);
 
 //____________Construction
-NameServer::NameServer() {}
-NameServer::~NameServer() {}
+NameServer::NameServer() {
+	//bList = new BrokersList();
+}
+NameServer::~NameServer() {
+}
 
-void NameServer::initialize(){
+void NameServer::initialize() {
 	setNSGate(gate("updIn"));
-	bList = new BrokersList();
 	srand(time(0));
 }
-void NameServer::handleMessage(cMessage* msg){
+void NameServer::handleMessage(cMessage* msg) {
 	NSMessage* ns = dynamic_cast<NSMessage*>(msg);
-	if (ns==NULL){return;}
-	if (dynamic_cast<Broker*>(ns->getRequester())!=NULL){
+	if (ns == NULL) {
+		return;
+	}
+	if (dynamic_cast<Broker*>(ns->getRequester()) != NULL) {
 		handleBrokerRequest(ns);
-	} else if (dynamic_cast<Client*>(ns->getRequester())!=NULL){
+	} else if (dynamic_cast<Client*>(ns->getRequester()) != NULL) {
 		handleClientRequest(ns);
 	}
 }
 
-void NameServer::handleBrokerRequest(NSMessage* msg){
-	int index;
-	if (bList->getSize()>1){
-		index = rand()%bList->getSize()-1;
+void NameServer::handleBrokerRequest(NSMessage* msg) {
+	Broker* b = NULL;
+	if (brokersVector.size() == 0) {
+		b = NULL;
 	} else {
-		index = 0;
+		if (brokersVector.size() == 1) {
+			b = brokersVector[0];
+		} else { //size > 1, which means we pick one random
+			b = brokersVector[rand() % brokersVector.size()]; // - 1
+		}
+		EV << "Its greater";
 	}
-	//char str[10]; ->>> diagnostics
-	//bubble(itoa(index, str, 10));
-	msg->setRequestedNode(bList->getBroker(index));
-	Broker* b = dynamic_cast<Broker*>(msg->getRequester());
-	sendDirect(msg,b->gate("updIn"));
-	bList->addBroker(dynamic_cast<Broker*>(msg->getRequester()));
+//if (bList->getSize()>1){
+//
+//} else {
+//	index = 0;
+//}
+//char str[10]; ->>> diagnostics
+//bubble(itoa(index, str, 10));
+//	b = bList->getBroker(index);
+	msg->setRequestedNode(b);
+	b = dynamic_cast<Broker*>(msg->getRequester());
+	sendDirect(msg, b->gate("updIn"));
+	//bList->addBroker(b);
+	brokersVector.push_back(b);
 }
 
-void NameServer::handleClientRequest(NSMessage* msg){
-	int index;
-	if (bList->getSize()>1){
-			index = rand()%bList->getSize();
+void NameServer::handleClientRequest(NSMessage* msg) {
+	Broker* b;
+	if (brokersVector.size()==0){
+		b = NULL;
+	} else {
+		if (brokersVector.size() > 1) {
+			b = brokersVector[rand() % brokersVector.size()];
 		} else {
-			index = 0;
+			b = brokersVector[0];
 		}
-	msg->setRequestedNode(bList->getBroker(index));
+	}
+
+	//Broker* b = bList->getBroker(index);
+	msg->setRequestedNode(b);
 	Client* c = dynamic_cast<Client*>(msg->getRequester());
-	sendDirect(msg,c->gate("updIn"));
+	sendDirect(msg, c->gate("updIn"));
 }

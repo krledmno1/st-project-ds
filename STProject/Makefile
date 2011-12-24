@@ -26,9 +26,9 @@ INCLUDE_PATH = \
     -IMessages/NSMsg \
     -IMessages/_Super \
     -INameServer \
-    -INameServer/BrokersList \
     -IST \
-    -IST/Node
+    -IST/Node \
+    -Istl
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -54,8 +54,6 @@ OBJS = \
     $O/Messages/NSMsg/NSMessage.o \
     $O/Messages/_Super/STMessage.o \
     $O/NameServer/NameServer.o \
-    $O/NameServer/BrokersList/BrokersList.o \
-    $O/NameServer/BrokersList/ListNode.o \
     $O/ST/Node/STNode.o
 
 # Message files
@@ -141,15 +139,15 @@ clean:
 	-rm -f Messages/NSMsg/*_m.cc Messages/NSMsg/*_m.h
 	-rm -f Messages/_Super/*_m.cc Messages/_Super/*_m.h
 	-rm -f NameServer/*_m.cc NameServer/*_m.h
-	-rm -f NameServer/BrokersList/*_m.cc NameServer/BrokersList/*_m.h
 	-rm -f ST/*_m.cc ST/*_m.h
 	-rm -f ST/Node/*_m.cc ST/Node/*_m.h
+	-rm -f stl/*_m.cc stl/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Brokers/*.cc Brokers/brokersContainer/*.cc Brokers/clientsContainer/*.cc Clients/*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc NameServer/*.cc NameServer/BrokersList/*.cc ST/*.cc ST/Node/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Brokers/*.cc Brokers/brokersContainer/*.cc Brokers/clientsContainer/*.cc Clients/*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc NameServer/*.cc ST/*.cc ST/Node/*.cc stl/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Brokers/Broker.o: Brokers/Broker.cc \
@@ -207,30 +205,7 @@ $O/NameServer/NameServer.o: NameServer/NameServer.cc \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
-	NameServer/BrokersList/BrokersList.h \
-	NameServer/BrokersList/ListNode.h \
 	NameServer/NameServer.h \
-	ST/Node/STNode.h
-$O/NameServer/BrokersList/BrokersList.o: NameServer/BrokersList/BrokersList.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/_Super/STMessage.h \
-	NameServer/BrokersList/BrokersList.h \
-	NameServer/BrokersList/ListNode.h \
-	ST/Node/STNode.h
-$O/NameServer/BrokersList/ListNode.o: NameServer/BrokersList/ListNode.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/_Super/STMessage.h \
-	NameServer/BrokersList/ListNode.h \
 	ST/Node/STNode.h
 $O/ST/Node/STNode.o: ST/Node/STNode.cc \
 	ST/Node/STNode.h
