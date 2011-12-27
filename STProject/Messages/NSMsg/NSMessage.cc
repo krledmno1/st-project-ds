@@ -31,6 +31,7 @@ NSMessage::NSMessage() {
 }
 NSMessage::NSMessage(STNode *_requester){
 	requester = _requester;
+	messageType = NAME_SERVER_MSG;
 }
 NSMessage::~NSMessage() {}
 

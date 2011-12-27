@@ -28,6 +28,10 @@ Client::~Client() {
 	cancelAndDelete(sleepMsg);
 }
 
+cGate* Client::getFreeInputGate(){
+	return gate("in");
+}
+
 void Client::initialize() {
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
 }
@@ -36,10 +40,15 @@ void Client::handleMessage(cMessage *msg) {
 		wakeUp();
 	} else if (msg == sleepMsg) {
 		goSleep();
-	} else if (dynamic_cast<NSMessage*>(msg) != NULL) {
-		handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
+	} else if (dynamic_cast<STMessage*>(msg) != NULL) { //we handle here STMessages
+		STMessage* stm = dynamic_cast<STMessage*>(msg);
+		if (stm->getType()==stm->NAME_SERVER_MSG){
+			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
+		} else {
+			EV << "Client: Unrecognized STMessage type \n";
+		}
 	} else {
-		EV << "Unrecognized message type \n";
+		EV << "Client: Unrecognized message type \n";
 	}
 }
 
@@ -50,7 +59,7 @@ void Client::wakeUp() {
 void Client::goSleep() {
 	//disconnect, and wait until he wakes up again
 	//we first send through the existing channel the request to the other party to disconnect his "way". Equivalent to gate("in")->disconnect(); which unfortunately doesn't work. Seems that only outPut gates can disconnect
-	send(new DisconnectionRequestMessage(gate("in")), gate("out"));
+	send(new DisconnectionRequestMessage(this), gate("out"));
 	gate("out")->disconnect();
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
 }
@@ -68,7 +77,7 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 		return;
 	}
 	myGate->connectTo(hisGate);
-	send(new ConnectionRequestMessage(gate("in"), true), myGate);
+	send(new ConnectionRequestMessage(this), myGate);
 	cancelAndDelete(nsm);
 	//now "decide" for how long it will run
 	scheduleAt(simTime() + par("SleepDelay"), sleepMsg);

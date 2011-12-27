@@ -21,17 +21,14 @@
 Define_Module(NameServer);
 
 //____________Construction
-NameServer::NameServer() {
-	//bList = new BrokersList();
-}
-NameServer::~NameServer() {
-}
+NameServer::NameServer() {}
+NameServer::~NameServer() {}
 
 void NameServer::initialize() {
 	setNSGate(gate("updIn"));
 	srand(time(0));
 }
-void NameServer::handleMessage(cMessage* msg) {
+void NameServer::handleMessage(cMessage* msg) { //NameServer only uses NSMessage*. Using type constants would only clutter the code
 	NSMessage* ns = dynamic_cast<NSMessage*>(msg);
 	if (ns == NULL) {
 		return;
@@ -86,4 +83,9 @@ void NameServer::handleClientRequest(NSMessage* msg) {
 	msg->setRequestedNode(b);
 	Client* c = dynamic_cast<Client*>(msg->getRequester());
 	sendDirect(msg, c->gate("updIn"));
+}
+
+cGate* NameServer::getFreeInputGate(){
+	//should't be called by anybody
+	return NULL;
 }

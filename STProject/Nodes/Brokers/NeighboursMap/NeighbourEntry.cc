@@ -13,15 +13,21 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "BCNode.h"
+#include "NeighbourEntry.h"
 
-BCNode::BCNode(cGate* b) {
-	broker = b;
+NeighbourEntry::NeighbourEntry(STNode* n, cGate* mog) {
+	neighbourNode = n;
+	myOutGate = mog;
 }
 
-BCNode::~BCNode() {}
+NeighbourEntry::~NeighbourEntry() {}
 
-cGate* BCNode::getBrokerGate(){return broker;}
-
-void BCNode::setNextNode(BCNode* ln){node = ln;}
-BCNode* BCNode::getNextNode(){return node;}
+STNode* NeighbourEntry::getNeighbour(){
+	return neighbourNode;
+}
+cGate* NeighbourEntry::getOutGate(){
+	return myOutGate;
+}
+void NeighbourEntry::setOutGate(cGate* og){
+	myOutGate = og;
+}

@@ -16,19 +16,17 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(CMDENV_LIBS)
 # C++ include paths (with -I)
 INCLUDE_PATH = \
     -I. \
-    -IBrokers \
-    -IBrokers/brokersContainer \
-    -IBrokers/clientsContainer \
-    -IClients \
     -IMessages \
     -IMessages/ConnectionRequestMessage \
     -IMessages/DisconnectionRequestMessage \
     -IMessages/NSMsg \
     -IMessages/_Super \
-    -INameServer \
-    -IST \
-    -IST/Node \
-    -Istl
+    -INodes \
+    -INodes/Brokers \
+    -INodes/Brokers/NeighboursMap \
+    -INodes/Clients \
+    -INodes/NameServer \
+    -INodes/_STNode
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -43,18 +41,16 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc and .msg files
 OBJS = \
-    $O/Brokers/Broker.o \
-    $O/Brokers/brokersContainer/BCNode.o \
-    $O/Brokers/brokersContainer/BrokersContainer.o \
-    $O/Brokers/clientsContainer/CCNode.o \
-    $O/Brokers/clientsContainer/ClientsMap.o \
-    $O/Clients/Client.o \
     $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o \
     $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o \
     $O/Messages/NSMsg/NSMessage.o \
     $O/Messages/_Super/STMessage.o \
-    $O/NameServer/NameServer.o \
-    $O/ST/Node/STNode.o
+    $O/Nodes/Brokers/Broker.o \
+    $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
+    $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
+    $O/Nodes/Clients/Client.o \
+    $O/Nodes/NameServer/NameServer.o \
+    $O/Nodes/_STNode/STNode.o
 
 # Message files
 MSGFILES =
@@ -129,84 +125,81 @@ clean:
 	-rm -rf $O
 	-rm -f STProject STProject.exe libSTProject.so libSTProject.a libSTProject.dll libSTProject.dylib
 	-rm -f ./*_m.cc ./*_m.h
-	-rm -f Brokers/*_m.cc Brokers/*_m.h
-	-rm -f Brokers/brokersContainer/*_m.cc Brokers/brokersContainer/*_m.h
-	-rm -f Brokers/clientsContainer/*_m.cc Brokers/clientsContainer/*_m.h
-	-rm -f Clients/*_m.cc Clients/*_m.h
 	-rm -f Messages/*_m.cc Messages/*_m.h
 	-rm -f Messages/ConnectionRequestMessage/*_m.cc Messages/ConnectionRequestMessage/*_m.h
 	-rm -f Messages/DisconnectionRequestMessage/*_m.cc Messages/DisconnectionRequestMessage/*_m.h
 	-rm -f Messages/NSMsg/*_m.cc Messages/NSMsg/*_m.h
 	-rm -f Messages/_Super/*_m.cc Messages/_Super/*_m.h
-	-rm -f NameServer/*_m.cc NameServer/*_m.h
-	-rm -f ST/*_m.cc ST/*_m.h
-	-rm -f ST/Node/*_m.cc ST/Node/*_m.h
-	-rm -f stl/*_m.cc stl/*_m.h
+	-rm -f Nodes/*_m.cc Nodes/*_m.h
+	-rm -f Nodes/Brokers/*_m.cc Nodes/Brokers/*_m.h
+	-rm -f Nodes/Brokers/NeighboursMap/*_m.cc Nodes/Brokers/NeighboursMap/*_m.h
+	-rm -f Nodes/Clients/*_m.cc Nodes/Clients/*_m.h
+	-rm -f Nodes/NameServer/*_m.cc Nodes/NameServer/*_m.h
+	-rm -f Nodes/_STNode/*_m.cc Nodes/_STNode/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Brokers/*.cc Brokers/brokersContainer/*.cc Brokers/clientsContainer/*.cc Clients/*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc NameServer/*.cc ST/*.cc ST/Node/*.cc stl/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-$O/Brokers/Broker.o: Brokers/Broker.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/_Super/STMessage.h \
-	ST/Node/STNode.h
-$O/Brokers/brokersContainer/BCNode.o: Brokers/brokersContainer/BCNode.cc \
-	Brokers/brokersContainer/BCNode.h
-$O/Brokers/brokersContainer/BrokersContainer.o: Brokers/brokersContainer/BrokersContainer.cc \
-	Brokers/brokersContainer/BCNode.h \
-	Brokers/brokersContainer/BrokersContainer.h
-$O/Brokers/clientsContainer/CCNode.o: Brokers/clientsContainer/CCNode.cc \
-	Brokers/clientsContainer/CCNode.h
-$O/Brokers/clientsContainer/ClientsMap.o: Brokers/clientsContainer/ClientsMap.cc \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h
-$O/Clients/Client.o: Clients/Client.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
-	Clients/Client.h \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/_Super/STMessage.h \
-	ST/Node/STNode.h
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/_Super/STMessage.h
+	Messages/_Super/STMessage.h \
+	Nodes/_STNode/STNode.h
 $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o: Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.cc \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/_Super/STMessage.h
+	Messages/_Super/STMessage.h \
+	Nodes/_STNode/STNode.h
 $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
-	ST/Node/STNode.h
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/_STNode/STNode.h
 $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 	Messages/_Super/STMessage.h
-$O/NameServer/NameServer.o: NameServer/NameServer.cc \
-	Brokers/Broker.h \
-	Brokers/clientsContainer/CCNode.h \
-	Brokers/clientsContainer/ClientsMap.h \
-	Clients/Client.h \
+$O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
 	Messages/_Super/STMessage.h \
-	NameServer/NameServer.h \
-	ST/Node/STNode.h
-$O/ST/Node/STNode.o: ST/Node/STNode.cc \
-	ST/Node/STNode.h
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Client.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Client.h \
+	Nodes/NameServer/NameServer.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/_STNode/STNode.o: Nodes/_STNode/STNode.cc \
+	Nodes/_STNode/STNode.h
 

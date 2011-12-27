@@ -13,24 +13,27 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef STNODE_H_
-#define STNODE_H_
+#ifndef NEIGHBOURSMAP_H_
+#define NEIGHBOURSMAP_H_
 
-#include <csimplemodule.h>
+#include "STNode.h"
+#include "NeighbourEntry.h"
+#include <vector>
 
-class STNode: public cSimpleModule {
+/*
+ * Obs: The mapping being a vector[], i cannot remove entries
+ */
+class NeighboursMap {
 public:
-	STNode();
-	virtual ~STNode();
+	NeighboursMap();
+	virtual ~NeighboursMap();
 
-	void setNSGate(cGate *nsGate);
-	cGate* getNSGate();
+	void addMapping(STNode* stn, cGate* outGate); //if a mapping exists, gets overwritten, otherwise a new one
 
-	bool isAlive();
-protected:
-	bool alive;
-	cMessage *wakeUpMsg;
-	cMessage *sleepMsg;
+	cGate* getOutputGate(STNode* stn);
+
+private:
+	std::vector<NeighbourEntry*> neighboursVector;
 };
 
-#endif /* STNODE_H_ */
+#endif /* NEIGHBOURSMAP_H_ */
