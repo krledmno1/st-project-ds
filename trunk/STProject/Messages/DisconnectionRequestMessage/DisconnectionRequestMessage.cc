@@ -15,13 +15,13 @@
 
 #include "DisconnectionRequestMessage.h"
 
-DisconnectionRequestMessage::DisconnectionRequestMessage(cGate* rig) {
+DisconnectionRequestMessage::DisconnectionRequestMessage(STNode* rn) {
 	messageType = DISCONNECTION_REQUEST_MSG;
-	requesterInputGate = rig;
+	requesterNode = rn;
 }
 
 DisconnectionRequestMessage::~DisconnectionRequestMessage() {}
 
-cGate* DisconnectionRequestMessage::getRequesterInputGate(){
-	return requesterInputGate;
+STNode* DisconnectionRequestMessage::getRequesterNode(){
+	return requesterNode;
 }

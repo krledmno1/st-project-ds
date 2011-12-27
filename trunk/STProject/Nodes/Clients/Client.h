@@ -20,11 +20,15 @@
 #include "NSMessage.h"
 #include <omnetpp.h>
 #include "Broker.h"
+#include "cgate.h"
 
 class Client: public STNode {
 public:
 	Client();
 	virtual ~Client();
+
+	virtual cGate* getFreeInputGate();
+
 protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();

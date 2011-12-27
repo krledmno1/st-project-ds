@@ -27,7 +27,7 @@ public:
 	virtual ~STMessage();
 
 	int getType();
-
+	//TODO I dont know how to access them, if you could implement the type checking using constants, I'm still using the dynamic_cast
 	static const int NAME_SERVER_MSG = 0;
 	static const int CONNECTION_REQUEST_MSG = 1;
 	static const int DISCONNECTION_REQUEST_MSG = 2;

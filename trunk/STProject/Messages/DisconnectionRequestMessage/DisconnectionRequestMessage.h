@@ -17,16 +17,16 @@
 #define DISCONNECTIONREQUESTMESSAGE_H_
 
 #include "STMessage.h"
-#include "cgate.h"
+#include "STNode.h"
 
 class DisconnectionRequestMessage: public STMessage {
 public:
-	DisconnectionRequestMessage(cGate* requesterInputGate);
+	DisconnectionRequestMessage(STNode* requesterNode);
 	virtual ~DisconnectionRequestMessage();
 
-	cGate* getRequesterInputGate();
+	STNode* getRequesterNode();
 private:
-	cGate* requesterInputGate; //This gate is the inputGate of the requester
+	STNode* requesterNode; //This gate is the inputGate of the requester
 };
 
 #endif /* DISCONNECTIONREQUESTMESSAGE_H_ */

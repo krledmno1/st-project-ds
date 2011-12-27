@@ -13,23 +13,31 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef BCNODE_H_
-#define BCNODE_H_
+#include "STNode.h"
+#include "cmessage.h"
 
-#include "cgate.h"
+static cGate *nsGate;
+	void STNode::setNSGate(cGate *nsg){
+		nsGate = nsg;
+	}
+	cGate* STNode::getNSGate(){
+		return nsGate;
+	}
 
-class BCNode {
-public:
-	BCNode(cGate* b);
-	virtual ~BCNode();
+//_____________Constructing
+STNode::STNode() {
+	alive = false;
+	wakeUpMsg = new cMessage("wake up");
+	sleepMsg = new cMessage("go to sleep");
+}
+STNode::~STNode() {}
 
-	cGate* getBrokerGate();
+//_____________Front Panel
+bool STNode::isAlive(){
+	return alive;
+}
 
-	void setNextNode(BCNode* ln);
-	BCNode* getNextNode();
-private:
-	cGate* broker;
-	BCNode* node;
-};
-
-#endif /* BCNODE_H_ */
+cGate* STNode::getFreeInputGate(){
+	EV << "The abstract function got called. This C++ thing....";
+	return NULL;
+}

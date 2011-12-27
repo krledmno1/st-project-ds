@@ -13,27 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef NAMESERVER_H_
-#define NAMESERVER_H_
+#ifndef STNODE_H_
+#define STNODE_H_
 
-#include "STNode.h"
-#include "NSMessage.h"
-#include <vector>
-#include "Broker.h"
+#include <csimplemodule.h>
 
-class NameServer: public STNode {
+class STNode: public cSimpleModule {
 public:
-	NameServer();
-	virtual ~NameServer();
-protected:
-	virtual void handleMessage(cMessage* msg);
-	virtual void initialize();
-private:
-	//BrokersList* bList;
-	void handleBrokerRequest(NSMessage* msg);
-	void handleClientRequest(NSMessage* msg);
+	STNode();
+	virtual ~STNode();
 
-	std::vector<Broker*> brokersVector;
+	virtual cGate* getFreeInputGate();
+
+	void setNSGate(cGate *nsGate);
+	cGate* getNSGate();
+
+	bool isAlive();
+protected:
+	bool alive;
+	cMessage *wakeUpMsg;
+	cMessage *sleepMsg;
 };
 
-#endif /* NAMESERVER_H_ */
+#endif /* STNODE_H_ */

@@ -20,9 +20,7 @@
 
 Define_Module(Broker);
 
-Broker::Broker() {
-	clientsMap = new ClientsMap();
-}
+Broker::Broker() {}
 Broker::~Broker() {
 	cancelAndDelete(wakeUpMsg);
 }
@@ -33,12 +31,17 @@ void Broker::initialize() {
 void Broker::handleMessage(cMessage *msg) {
 	if (msg == wakeUpMsg) {
 		wakeUp();
-	} else if (dynamic_cast<NSMessage*>(msg) != NULL) {
-		handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
-	} else if (dynamic_cast<ConnectionRequestMessage*>(msg) != NULL) {
-		handleConnectionRequest(dynamic_cast<ConnectionRequestMessage*>(msg));
-	} else if (dynamic_cast<DisconnectionRequestMessage*>(msg) != NULL) {
-		handleDisconnectionRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
+	} else if (dynamic_cast<STMessage*>(msg)!=NULL){
+		STMessage* stm = dynamic_cast<STMessage*>(msg);
+		if (stm->getType() == stm->NAME_SERVER_MSG){
+			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
+		} else if (stm->getType() == stm->CONNECTION_REQUEST_MSG){
+			handleConnectionRequest(dynamic_cast<ConnectionRequestMessage*>(msg));
+		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG){
+			handleDisconnectionRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
+		} else {
+			EV << "Broker: Unknown STMessage type \n";
+		}
 	} else {
 		EV << "Broker: Unknown message type \n";
 	}
@@ -59,7 +62,7 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 		}
 		myGate->connectTo(hisGate);
 		//TODO handle the case in which you have no free InputGate
-		send(new ConnectionRequestMessage(getFreeInputGate(), true), myGate);
+		send(new ConnectionRequestMessage(this),myGate);
 		cancelAndDelete(nsm);
 	}
 }
@@ -67,18 +70,25 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 	//TODO here you should separate between client gates, and broker gates (and produce corrisponding mappings, with subscribings, etc.. )
 	//TODO also, it should be handled the case in which the broker is out of Free Gates, in which case he should return an error Message (not available, something like this)
-	cGate* outGate = getFreeOutputGate();
-	outGate->connectTo(crm->getRequesterGate());
-	if (crm->isClient()) {
-		clientsMap->addMapping(outGate, crm->getRequesterGate());
+	STNode* stn = crm->getRequesterNode();
+	if (stn==NULL){
+		EV << "Broker: RequesterNode is NULL. Big Error, must check";
+		return;
 	}
+	cGate* outGate = getFreeOutputGate();
+	outGate->connectTo(stn->getFreeInputGate());
+
+	neighboursMap.addMapping(stn,outGate);
 	cancelAndDelete(crm);
 }
 
 void Broker::handleDisconnectionRequest(DisconnectionRequestMessage* drm) {
-	cGate* myOutputGate = clientsMap->getBrokerOutPutGate(drm->getRequesterInputGate());
+	cGate* myOutputGate = neighboursMap.getOutputGate(drm->getRequesterNode());
+	if (myOutputGate==NULL){
+		EV << "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
+		return;
+	}
 	myOutputGate->disconnect();
-	clientsMap->removeMapping(myOutputGate);
 	cancelAndDelete(drm);
 }
 

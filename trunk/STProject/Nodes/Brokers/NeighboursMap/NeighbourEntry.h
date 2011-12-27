@@ -13,26 +13,24 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
+#ifndef NEIGHBOURENTRY_H_
+#define NEIGHBOURENTRY_H_
+
 #include "STNode.h"
-#include "cmessage.h"
+#include "cgate.h"
 
-static cGate *nsGate;
-	void STNode::setNSGate(cGate *nsg){
-		nsGate = nsg;
-	}
-	cGate* STNode::getNSGate(){
-		return nsGate;
-	}
+class NeighbourEntry {
+public:
+	NeighbourEntry(STNode* neighbour, cGate* myOutGate);
+	virtual ~NeighbourEntry();
 
-//_____________Constructing
-STNode::STNode() {
-	alive = false;
-	wakeUpMsg = new cMessage("wake up");
-	sleepMsg = new cMessage("go to sleep");
-}
-STNode::~STNode() {}
+	STNode* getNeighbour();
+	cGate* getOutGate();
+	void setOutGate(cGate* og);
 
-//_____________Front Panel
-bool STNode::isAlive(){
-	return alive;
-}
+private:
+	STNode* neighbourNode;
+	cGate* myOutGate;
+};
+
+#endif /* NEIGHBOURENTRY_H_ */

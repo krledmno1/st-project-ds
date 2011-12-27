@@ -13,16 +13,30 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "CCNode.h"
+#ifndef BROKER_H_
+#define BROKER_H_
 
-CCNode::CCNode(cGate* bog, cGate* cig) {
-	brokerOutputGate = bog;
-	clientInputGate = cig;
-}
-CCNode::~CCNode() {}
+#include "STNode.h"
+#include "NSMessage.h"
+#include "ConnectionRequestMessage.h"
+#include "DisconnectionRequestMessage.h"
+#include "NeighboursMap.h"
 
-cGate* CCNode::getBrokerOutputGate(){return brokerOutputGate;}
-cGate* CCNode::getClientInputGate(){return clientInputGate;}
+class Broker: public STNode {
+public:
+	Broker();
+	virtual ~Broker();
+	virtual cGate* getFreeInputGate();
+	cGate* getFreeOutputGate();
+protected:
+	virtual void handleMessage(cMessage *msg);
+	virtual void initialize();
+private:
+	void wakeUp();
+	void handleNameServerMessage(NSMessage* nsm);
+	void handleConnectionRequest(ConnectionRequestMessage* crm);
+	void handleDisconnectionRequest(DisconnectionRequestMessage* drm);
+	NeighboursMap neighboursMap;
+};
 
-CCNode* CCNode::getNextNode(){return nextNode;}
-void CCNode::setNextNode(CCNode* ccn){nextNode = ccn;}
+#endif /* BROKER_H_ */

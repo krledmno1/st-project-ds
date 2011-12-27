@@ -13,25 +13,29 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef CCNODE_H_
-#define CCNODE_H_
-#include "cgate.h"
+#ifndef NAMESERVER_H_
+#define NAMESERVER_H_
 
-class CCNode {
+#include "STNode.h"
+#include "NSMessage.h"
+#include <vector>
+#include "Broker.h"
+
+class NameServer: public STNode {
 public:
-	CCNode(cGate* brokerOutputGate, cGate* clientInputGate);
-	virtual ~CCNode();
+	NameServer();
+	virtual ~NameServer();
+protected:
+	virtual void handleMessage(cMessage* msg);
+	virtual void initialize();
 
-	cGate* getBrokerOutputGate();
-	cGate* getClientInputGate();
-
-	CCNode* getNextNode();
-	void setNextNode(CCNode* ccn);
-
+	virtual cGate* getFreeInputGate();
 private:
-	cGate* brokerOutputGate;
-	cGate* clientInputGate;
-	CCNode* nextNode;
+	//BrokersList* bList;
+	void handleBrokerRequest(NSMessage* msg);
+	void handleClientRequest(NSMessage* msg);
+
+	std::vector<Broker*> brokersVector;
 };
 
-#endif /* CCNODE_H_ */
+#endif /* NAMESERVER_H_ */

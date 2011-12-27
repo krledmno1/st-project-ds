@@ -17,17 +17,15 @@
 #define CONNECTIONREQUESTMESSAGE_H_
 
 #include "STMessage.h"
-#include <cGate.h>
+#include "STNode.h"
 
 class ConnectionRequestMessage: public STMessage {
 public:
-	ConnectionRequestMessage(cGate* requesterGate, bool isClient);
+	ConnectionRequestMessage(STNode* requesterNode);
 	virtual ~ConnectionRequestMessage();
-	cGate* getRequesterGate();
-	bool isClient();
+	STNode* getRequesterNode();
 private:
-	cGate* requesterInputGate;
-	bool isCli;
+	STNode* requesterNode;
 };
 
 #endif /* CONNECTIONREQUESTMESSAGE_H_ */
