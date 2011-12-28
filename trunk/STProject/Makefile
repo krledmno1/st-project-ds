@@ -171,11 +171,17 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Client.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/_STNode/STNode.h

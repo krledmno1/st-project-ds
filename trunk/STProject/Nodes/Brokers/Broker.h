@@ -26,13 +26,18 @@ class Broker: public STNode {
 public:
 	Broker();
 	virtual ~Broker();
+
 	virtual cGate* getFreeInputGate();
 	cGate* getFreeOutputGate();
 protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
+
+	virtual void handleBrokerDisconnection(Broker* b);
+	virtual void handleClientDisconnection(STNode* c); //Client* would produce circular dependency
 private:
 	void wakeUp();
+	void sleep();
 	void handleNameServerMessage(NSMessage* nsm);
 	void handleConnectionRequest(ConnectionRequestMessage* crm);
 	void handleDisconnectionRequest(DisconnectionRequestMessage* drm);

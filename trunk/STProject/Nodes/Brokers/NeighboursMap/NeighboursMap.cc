@@ -14,28 +14,62 @@
 // 
 
 #include "NeighboursMap.h"
+#include "Broker.h"
 
-NeighboursMap::NeighboursMap() {}
-NeighboursMap::~NeighboursMap() {}
+NeighboursMap::NeighboursMap() {
+}
+NeighboursMap::~NeighboursMap() {
+}
 
-void NeighboursMap::addMapping(STNode* stn, cGate* outGate){
+void NeighboursMap::addMapping(STNode* stn, cGate* outGate) {
 	//firstly I check if there isn't already this node registered
-	for (unsigned int i=0;i<neighboursVector.size();i++){
-		if (neighboursVector[i]->getNeighbour()==stn){
-			neighboursVector[i]->setOutGate(outGate);
+	NeighbourEntry* ne = new NeighbourEntry(stn, outGate);
+	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
+		if (neighboursVector[i] == NULL) {
+			neighboursVector[i] = ne;
 			return;
 		}
 	}
-	//here it means we scanned the entire list
-	NeighbourEntry* ne = new NeighbourEntry(stn,outGate);
 	neighboursVector.push_back(ne);
 }
 
-cGate* NeighboursMap::getOutputGate(STNode* stn){
-	for (unsigned int i=0; i<neighboursVector.size();i++){
-		if (neighboursVector[i]->getNeighbour()==stn){
-			return neighboursVector[i]->getOutGate();
+cGate* NeighboursMap::getOutputGate(STNode* stn) {
+	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
+		if (neighboursVector[i] != NULL){
+			if (neighboursVector[i]->getNeighbour() == stn) {
+				return neighboursVector[i]->getOutGate();
+			}
 		}
 	}
 	return NULL;
+}
+
+std::vector<NeighbourEntry*> NeighboursMap::getNeighboursVector() {
+	return neighboursVector;
+}
+
+bool NeighboursMap::hasBrokers() { //it means, it has a broker, regardless of clients
+	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
+		if (neighboursVector[i] != NULL) {
+			if (dynamic_cast<Broker*>(neighboursVector[i]->getNeighbour()) != NULL) {
+				if (neighboursVector[i]->getOutGate()->isConnected()) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void NeighboursMap::removeMapping(STNode* stn) {
+	//firstly I check if there isn't already this node registered
+	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
+		if (neighboursVector[i] != NULL) {
+			if (neighboursVector[i]->getNeighbour() == stn) {
+				neighboursVector[i] = NULL;
+				return;
+			}
+		}
+	}
+	EV	<< "NeighboursMap: ERROR The node to be removed from mappings wasn't found!!! (This shouldn't happen)";
 }

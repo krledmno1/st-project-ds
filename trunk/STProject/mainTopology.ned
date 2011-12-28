@@ -18,8 +18,9 @@ package stproject;
 simple Client
 {
     parameters:
-        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 60s));
-        volatile double SleepDelay @unit(s) = default(uniform(0s, 60s));
+        volatile double WakeUpDelay @unit(s) = default(uniform(10s, 30s));
+        volatile double SleepDelay @unit(s) = default(uniform(60s, 120s));
+        volatile double ReconnectDelay @unit(s) = default(uniform(2s,6s));
     @display("i=device/laptop");
     gates:
         input in;
@@ -32,8 +33,8 @@ simple Broker
     parameters:
         int nrInputGates = default(10);
         int nrOutputGates = default(10);
-        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 60s));
-        volatile double SleepDelay @unit(s) = default(uniform(0s, 60s));
+        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 40s));
+        volatile double SleepDelay @unit(s) = default(uniform(20s, 60s));
         @display("i=device/router");
     gates:
         input in[nrInputGates];
@@ -53,8 +54,8 @@ simple NameServer
 network STNetwork
 {
     parameters:
-        int nrClients = default(12);
-        int nrBrokers = default(4);
+        int nrClients = default(4);
+        int nrBrokers = default(3);
 
         @display("bgb=914,370");
     submodules:

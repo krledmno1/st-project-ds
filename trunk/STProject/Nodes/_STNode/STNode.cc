@@ -30,7 +30,10 @@ STNode::STNode() {
 	wakeUpMsg = new cMessage("wake up");
 	sleepMsg = new cMessage("go to sleep");
 }
-STNode::~STNode() {}
+STNode::~STNode() {
+	cancelAndDelete(wakeUpMsg);
+	cancelAndDelete(sleepMsg);
+}
 
 //_____________Front Panel
 bool STNode::isAlive(){
