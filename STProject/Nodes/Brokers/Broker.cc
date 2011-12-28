@@ -14,6 +14,7 @@
 // 
 
 #include "Broker.h"
+#include "Client.h"
 #include "NSMessage.h"
 #include "ConnectionRequestMessage.h"
 #include "DisconnectionRequestMessage.h"
@@ -21,9 +22,7 @@
 Define_Module(Broker);
 
 Broker::Broker() {}
-Broker::~Broker() {
-	cancelAndDelete(wakeUpMsg);
-}
+Broker::~Broker() {}
 
 void Broker::initialize() {
 	scheduleAt(par("WakeUpDelay"), wakeUpMsg);
@@ -31,14 +30,18 @@ void Broker::initialize() {
 void Broker::handleMessage(cMessage *msg) {
 	if (msg == wakeUpMsg) {
 		wakeUp();
-	} else if (dynamic_cast<STMessage*>(msg)!=NULL){
+	} else if (msg == sleepMsg) {
+		sleep();
+	} else if (dynamic_cast<STMessage*>(msg) != NULL) {
 		STMessage* stm = dynamic_cast<STMessage*>(msg);
-		if (stm->getType() == stm->NAME_SERVER_MSG){
+		if (stm->getType() == stm->NAME_SERVER_MSG) {
 			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
-		} else if (stm->getType() == stm->CONNECTION_REQUEST_MSG){
-			handleConnectionRequest(dynamic_cast<ConnectionRequestMessage*>(msg));
-		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG){
-			handleDisconnectionRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
+		} else if (stm->getType() == stm->CONNECTION_REQUEST_MSG) {
+			handleConnectionRequest(
+					dynamic_cast<ConnectionRequestMessage*>(msg));
+		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG) {
+			handleDisconnectionRequest(
+					dynamic_cast<DisconnectionRequestMessage*>(msg));
 		} else {
 			EV << "Broker: Unknown STMessage type \n";
 		}
@@ -51,6 +54,30 @@ void Broker::wakeUp() {
 	sendDirect(new NSMessage(dynamic_cast<STNode*>(this)), getNSGate());
 }
 
+void Broker::sleep() {
+	//broker disconnection is a lot messier than client disconnection.
+	//step0: decide if I can sleep (if I'm the only broker present, means I cannot sleep) Thus, I check if I have any connected Brokers
+	//TODO what if in the same time 2 connected brokers decide to disconnect? Hell will break loose, we need to use a sort of "locking" mechanism in this
+	if (neighboursMap.hasBrokers() == false) { //it means we cannot sleep, we delay the sleep
+		scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
+		EV << "Cannot sleep, I'm alone";
+		return;
+	}
+	//step1: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
+	sendDirect(new DisconnectionRequestMessage(this), getNSGate());
+	//step2: send disconnection requests to all neighbours
+	std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
+	for (unsigned int i = 0; i < neighbours.size(); i++) {
+		if (neighbours[i] != NULL) {
+			send(new DisconnectionRequestMessage(this), neighbours[i]->getOutGate());
+			neighbours[i]->getOutGate()->disconnect();
+			neighboursMap.removeMapping(neighbours[i]->getNeighbour());
+		}
+	}
+	//step3: schedule a rewake
+	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+}
+
 void Broker::handleNameServerMessage(NSMessage* nsm) {
 	Broker* requestedNode = dynamic_cast<Broker*>(nsm->getRequestedNode());
 	if (requestedNode != NULL && requestedNode != this) {
@@ -61,35 +88,58 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 			return;
 		}
 		myGate->connectTo(hisGate);
+		neighboursMap.addMapping(requestedNode, myGate);
 		//TODO handle the case in which you have no free InputGate
-		send(new ConnectionRequestMessage(this),myGate);
+		send(new ConnectionRequestMessage(this), myGate);
 		cancelAndDelete(nsm);
-	}
+	} //we assume we're the first Broker registering to the network
+	scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
 }
 
 void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 	//TODO here you should separate between client gates, and broker gates (and produce corrisponding mappings, with subscribings, etc.. )
 	//TODO also, it should be handled the case in which the broker is out of Free Gates, in which case he should return an error Message (not available, something like this)
 	STNode* stn = crm->getRequesterNode();
-	if (stn==NULL){
+	if (stn == NULL) {
 		EV << "Broker: RequesterNode is NULL. Big Error, must check";
 		return;
 	}
 	cGate* outGate = getFreeOutputGate();
 	outGate->connectTo(stn->getFreeInputGate());
 
-	neighboursMap.addMapping(stn,outGate);
+	neighboursMap.addMapping(stn, outGate);
 	cancelAndDelete(crm);
 }
 
 void Broker::handleDisconnectionRequest(DisconnectionRequestMessage* drm) {
-	cGate* myOutputGate = neighboursMap.getOutputGate(drm->getRequesterNode());
-	if (myOutputGate==NULL){
+	Broker* b = dynamic_cast<Broker*>(drm->getRequesterNode());
+	if (b != NULL) {
+		handleBrokerDisconnection(b);
+	} else {
+		handleClientDisconnection(drm->getRequesterNode());
+	}
+	cancelAndDelete(drm);
+}
+
+void Broker::handleBrokerDisconnection(Broker* b) {
+	//TODO
+	cGate* myOutputGate = neighboursMap.getOutputGate(b);
+	if (myOutputGate == NULL) {
 		EV << "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
 		return;
 	}
 	myOutputGate->disconnect();
-	cancelAndDelete(drm);
+	neighboursMap.removeMapping(b);
+}
+void Broker::handleClientDisconnection(STNode* c) {
+	cGate* myOutputGate = neighboursMap.getOutputGate(c);
+	if (myOutputGate == NULL) {
+		EV
+					<< "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
+		return;
+	}
+	myOutputGate->disconnect();
+	neighboursMap.removeMapping(c);
 }
 
 cGate* Broker::getFreeInputGate() {

@@ -19,6 +19,9 @@
 #include "STMessage.h"
 #include "STNode.h"
 
+/*
+ * DisconnectionMessage is also used by the Broker to unregister itself from the NameServer
+ */
 class DisconnectionRequestMessage: public STMessage {
 public:
 	DisconnectionRequestMessage(STNode* requesterNode);

@@ -36,6 +36,7 @@ private:
 	void wakeUp();
 	void goSleep();
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
+	void handleBrokerDisconnectionRequest(); //if a broker wishes to disconnect, it is client's task to find another broker
 };
 
 #endif /* CLIENT_H_ */

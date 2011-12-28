@@ -29,8 +29,13 @@ public:
 	virtual ~NeighboursMap();
 
 	void addMapping(STNode* stn, cGate* outGate); //if a mapping exists, gets overwritten, otherwise a new one
+	void removeMapping(STNode* stn);
 
 	cGate* getOutputGate(STNode* stn);
+
+	bool hasBrokers(); //it means, it has a broker, regardless of clients
+
+	std::vector<NeighbourEntry*> getNeighboursVector();
 
 private:
 	std::vector<NeighbourEntry*> neighboursVector;

@@ -20,13 +20,8 @@
 
 Define_Module(Client);
 
-Client::Client() {
-}
-
-Client::~Client() {
-	cancelAndDelete(wakeUpMsg);
-	cancelAndDelete(sleepMsg);
-}
+Client::Client() {}
+Client::~Client() {}
 
 cGate* Client::getFreeInputGate(){
 	return gate("in");
@@ -44,6 +39,9 @@ void Client::handleMessage(cMessage *msg) {
 		STMessage* stm = dynamic_cast<STMessage*>(msg);
 		if (stm->getType()==stm->NAME_SERVER_MSG){
 			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
+		} else if (stm->getType()==stm->DISCONNECTION_REQUEST_MSG){
+			handleBrokerDisconnectionRequest();
+			cancelAndDelete(msg);
 		} else {
 			EV << "Client: Unrecognized STMessage type \n";
 		}
@@ -65,7 +63,14 @@ void Client::goSleep() {
 }
 
 void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we get from NS when we ask for a broker
-	Broker* requestedNode = dynamic_cast<Broker*>(nsm->getRequestedNode()); //instead of casting the message I use directly request object
+	if (nsm==NULL){
+		EV << "WTF??? /n";
+		return;
+	}
+	STNode* stn = nsm->getRequestedNode();
+	//return;
+	Broker* requestedNode = dynamic_cast<Broker*>(stn);
+	//return; //cast fails
 	if (requestedNode == NULL) { //try later
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
 		return;
@@ -81,4 +86,11 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 	cancelAndDelete(nsm);
 	//now "decide" for how long it will run
 	scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
+}
+
+void Client::handleBrokerDisconnectionRequest(){ //if a broker wishes to disconnect, it is client's task to find another broker
+	//this will be a sort of goSleep() method, only that it will try to wake up much sooner
+	gate("out")->disconnect();
+	cancelEvent(sleepMsg); //because if it comes before the Reconnection wake up, we end up wanting to disconnect when we are already disconnected
+	scheduleAt(simTime() + par("ReconnectDelay"), wakeUpMsg);
 }
