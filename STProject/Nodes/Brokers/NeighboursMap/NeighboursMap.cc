@@ -48,6 +48,34 @@ std::vector<NeighbourEntry*> NeighboursMap::getNeighboursVector() {
 	return neighboursVector;
 }
 
+std::vector<NeighbourEntry*> NeighboursMap::getBrokersVector(){
+	//in order to create a swift vector, count the brokers first
+	int brokersCount = 0;
+	for (unsigned int i=0;i<neighboursVector.size();i++){
+		if (neighboursVector[i]!=NULL){
+			if (dynamic_cast<Broker*>(neighboursVector[i]->getNeighbour())!=NULL){ //means its a Broker, so we count it
+					brokersCount++;
+			}
+		}
+	}
+	//create a new vector of the proper size (to avoid resizing, costlier then a linear scan
+	//std::vector<NeighbourEntry*>* brokersVectorPointer = new std::vector<NeighbourEntry*>(brokersCount);
+	std::vector<NeighbourEntry*> brokersVector(brokersCount);
+	//now start putting the pointers to the vectors
+	int vectorIndex = 0;
+	for (unsigned int i=0;i<neighboursVector.size();i++){
+		if (neighboursVector[i]!=NULL){
+			Broker* b = dynamic_cast<Broker*>(neighboursVector[i]->getNeighbour());
+			if (b!=NULL){ //we put it
+				//brokersVectorPointer->push_back(neighboursVector[i]);
+				brokersVector[vectorIndex] = neighboursVector[i];
+				vectorIndex++;
+			}
+		}
+	}
+	return brokersVector; //now the brokers vector should be totally filled with our pointers
+}
+
 bool NeighboursMap::hasBrokers() { //it means, it has a broker, regardless of clients
 	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
 		if (neighboursVector[i] != NULL) {
@@ -65,7 +93,7 @@ void NeighboursMap::removeMapping(STNode* stn) {
 	//firstly I check if there isn't already this node registered
 	for (unsigned int i = 0; i < neighboursVector.size(); i++) {
 		if (neighboursVector[i] != NULL) {
-			if (neighboursVector[i]->getNeighbour() == stn) {
+			if (neighboursVector[i]->getNeighbour() == stn) { //found it
 				neighboursVector[i] = NULL;
 				return;
 			}
