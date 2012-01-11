@@ -68,9 +68,7 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 		return;
 	}
 	STNode* stn = nsm->getRequestedNode();
-	//return;
 	Broker* requestedNode = dynamic_cast<Broker*>(stn);
-	//return; //cast fails
 	if (requestedNode == NULL) { //try later
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
 		return;

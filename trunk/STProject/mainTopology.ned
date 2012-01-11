@@ -28,13 +28,13 @@ simple Client
         input updIn; //used to communicate with the NS
 }
 
-simple Broker
+simple AcyclicBroker
 {
     parameters:
         int nrInputGates = default(10);
         int nrOutputGates = default(10);
         volatile double WakeUpDelay @unit(s) = default(uniform(0s, 40s));
-        volatile double SleepDelay @unit(s) = default(uniform(20s, 60s));
+        volatile double SleepDelay @unit(s) = default(uniform(120s, 240s));
         @display("i=device/router");
     gates:
         input in[nrInputGates];
@@ -54,13 +54,13 @@ simple NameServer
 network STNetwork
 {
     parameters:
-        int nrClients = default(4);
-        int nrBrokers = default(3);
+        int nrClients = default(0);
+        int nrBrokers = default(12);
 
         @display("bgb=914,370");
     submodules:
         clients[nrClients]: Client;
-        borkers[nrBrokers]: Broker;
+        borkers[nrBrokers]: AcyclicBroker;
         nameServer: NameServer;
     connections allowunconnected:
 }

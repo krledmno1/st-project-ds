@@ -58,20 +58,20 @@ void Broker::sleep() {
 	//broker disconnection is a lot messier than client disconnection.
 	//step0: decide if I can sleep (if I'm the only broker present, means I cannot sleep) Thus, I check if I have any connected Brokers
 	//TODO what if in the same time 2 connected brokers decide to disconnect? Hell will break loose, we need to use a sort of "locking" mechanism in this
-	if (neighboursMap.hasBrokers() == false) { //it means we cannot sleep, we delay the sleep
+	if (neighboursMap.hasBrokers() == false) { //it means we cannot sleep, we reschedule the sleep
 		scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
 		EV << "Cannot sleep, I'm alone";
 		return;
 	}
 	//step1: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
 	sendDirect(new DisconnectionRequestMessage(this), getNSGate());
-	//step2: send disconnection requests to all neighbours
+	//step2: send disconnection requests to all neighbors
 	std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
 	for (unsigned int i = 0; i < neighbours.size(); i++) {
 		if (neighbours[i] != NULL) {
 			send(new DisconnectionRequestMessage(this), neighbours[i]->getOutGate());
 			neighbours[i]->getOutGate()->disconnect();
-			neighboursMap.removeMapping(neighbours[i]->getNeighbour());
+			neighboursMap.removeMapping(neighbours[i]->getNeighbour()); //this entry will become null
 		}
 	}
 	//step3: schedule a rewake

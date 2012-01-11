@@ -23,6 +23,7 @@ INCLUDE_PATH = \
     -IMessages/_Super \
     -INodes \
     -INodes/Brokers \
+    -INodes/Brokers/AcyclicBroker \
     -INodes/Brokers/NeighboursMap \
     -INodes/Clients \
     -INodes/NameServer \
@@ -46,6 +47,7 @@ OBJS = \
     $O/Messages/NSMsg/NSMessage.o \
     $O/Messages/_Super/STMessage.o \
     $O/Nodes/Brokers/Broker.o \
+    $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o \
     $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
     $O/Nodes/Clients/Client.o \
@@ -132,6 +134,7 @@ clean:
 	-rm -f Messages/_Super/*_m.cc Messages/_Super/*_m.h
 	-rm -f Nodes/*_m.cc Nodes/*_m.h
 	-rm -f Nodes/Brokers/*_m.cc Nodes/Brokers/*_m.h
+	-rm -f Nodes/Brokers/AcyclicBroker/*_m.cc Nodes/Brokers/AcyclicBroker/*_m.h
 	-rm -f Nodes/Brokers/NeighboursMap/*_m.cc Nodes/Brokers/NeighboursMap/*_m.h
 	-rm -f Nodes/Clients/*_m.cc Nodes/Clients/*_m.h
 	-rm -f Nodes/NameServer/*_m.cc Nodes/NameServer/*_m.h
@@ -141,7 +144,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -172,6 +175,16 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/_STNode/STNode.h
+$O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/AcyclicBroker.cc \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Brokers/AcyclicBroker/AcyclicBroker.h \
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \

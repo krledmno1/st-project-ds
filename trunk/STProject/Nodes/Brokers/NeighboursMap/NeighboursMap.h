@@ -37,8 +37,10 @@ public:
 
 	std::vector<NeighbourEntry*> getNeighboursVector();
 
+	std::vector<NeighbourEntry*> getBrokersVector();
+
 private:
-	std::vector<NeighbourEntry*> neighboursVector;
+	std::vector<NeighbourEntry*> neighboursVector; /*Note, the vector MAY HAVE NULL ENTRIES */
 };
 
 #endif /* NEIGHBOURSMAP_H_ */
