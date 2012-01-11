@@ -22,13 +22,12 @@ Define_Module(NameServer);
 
 //____________Construction
 NameServer::NameServer() {
+	srand(time(0));
 }
-NameServer::~NameServer() {
-}
+NameServer::~NameServer() {}
 
 void NameServer::initialize() {
 	setNSGate(gate("updIn"));
-	srand(time(0));
 }
 void NameServer::handleMessage(cMessage* msg) { //NameServer only uses NSMessage*. Using type constants would only clutter the code
 	STMessage* stm = dynamic_cast<STMessage*>(msg);

@@ -31,6 +31,9 @@ public:
 	static const int NAME_SERVER_MSG = 0;
 	static const int CONNECTION_REQUEST_MSG = 1;
 	static const int DISCONNECTION_REQUEST_MSG = 2;
+	static const int SUBSCRIPTION_MESSAGE = 3;
+	static const int PUBLISH_MESSAGE = 4;
+	static const int UNSUBSCRIPTION_MESSAGE = 5;
 
 protected:
 	int messageType;

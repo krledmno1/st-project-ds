@@ -13,28 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef STNODE_H_
-#define STNODE_H_
+#include "UnsubscriptionMessage.h"
 
-#include <csimplemodule.h>
+UnsubscriptionMessage::UnsubscriptionMessage(STNode* stn, int t) {
+	messageType = UNSUBSCRIPTION_MESSAGE;
+	unsubscriber = stn;
+	topic = t;
+}
 
-class STNode: public cSimpleModule {
-public:
-	STNode();
-	virtual ~STNode();
+UnsubscriptionMessage::~UnsubscriptionMessage() {}
 
-	virtual cGate* getFreeInputGate();
-	void setNSGate(cGate *nsGate);
-
-	bool isAlive();
-protected:
-	bool alive;
-	cMessage *wakeUpDelayMsg;
-	cMessage *sleepDelayMsg;
-
-	cGate* getNSGate();
-
-	static const int NR_TOPICS = 4; //€[0;4] No negative topics!
-};
-
-#endif /* STNODE_H_ */
+STNode* UnsubscriptionMessage::getUnsubscriber(){
+	return unsubscriber;
+}
+int UnsubscriptionMessage::getTopic(){
+	return topic;
+}

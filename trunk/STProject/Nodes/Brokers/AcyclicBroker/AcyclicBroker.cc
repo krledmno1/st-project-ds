@@ -14,6 +14,7 @@
 // 
 
 #include "AcyclicBroker.h"
+#include "Client.h"
 
 Define_Module(AcyclicBroker);
 
@@ -28,7 +29,7 @@ void AcyclicBroker::sleep(){
 	//std::vector<NeighbourEntry*>* brokersVectorPointer = ;
 	std::vector<NeighbourEntry*> brokersVector = neighboursMap.getBrokersVector();
 	if (brokersVector.size()<=0) { //it means we cannot sleep, we reschedule the sleep
-		scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
+		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 		EV << "Cannot sleep, I'm alone";
 		//delete(brokersVectorPointer); //stupid garbage collection
 		return;
@@ -57,5 +58,80 @@ void AcyclicBroker::sleep(){
 		}
 	}
 	//step4: schedule a rewake
-	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+}
+
+void AcyclicBroker::handlePublish(PublishMessage* pm){
+	STNode* stn = pm->getSender();
+	int topic = pm->getTopic();
+	std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(pm->getTopic());
+	//if (subscribers.size()==0 && dynamic_cast<Client*>(stn)==NULL){
+	//	EV << "FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.FATAL ERROR, NO SUBSCRIBERS.";
+	//}
+	for (unsigned int i=0; i<subscribers.size();i++){
+		if (subscribers[i]->getNeighbour()!=stn){
+			send (new PublishMessage(this,topic),subscribers[i]->getOutGate());
+		}
+	}
+	cancelAndDelete(pm);
+}
+
+/* COMMENTS FOR THE ELSE PART:
+ * There is a trick in propagating Subscriptions
+ * 1. Once i get a subscription, I propagate the subscriptions in the name of my subscriptor.
+ * BUT IF I RECEIVE SUBSCRIPTION FROM A BROKER, it doesnt mean that I will receive the topic from that broker.
+ * Imagine the scenario where a brokers asks me to look after topic 0, I propagate the subscription to all the other brokers, and then a client asks me to look after topic 0.
+ * If I check and see that I got already subscribers on topic 0 I stay calm and say: ok, its gonna come. WRONG
+ * The broker who sent me that subscription in the first place WONT send me publications on topic 0 UNLESS I ask him for that.
+ * Solution: the ELSE PART. If I have no client asking already for topic 0, I'm going to repropagate the subscription.
+ */
+void AcyclicBroker::handleSubscription(SubscriptionMessage* sm){
+	STNode* stn = sm->getSubscriber();
+	int topic = sm->getTopic();
+	//step 0: if someone asks me to look after a topic, and I wasn't looking already after that topic, I become interested in that topic so I notify my neighbours
+	if (!neighboursMap.hasClientSubscribers(topic)){
+		std::vector<NeighbourEntry*> brokers = neighboursMap.getBrokersVector();
+		for (unsigned int i=0; i<brokers.size();i++){
+			if (brokers[i]->getNeighbour()!=stn){ //we dont want to send it back to where it came from
+				send(new SubscriptionMessage(this,topic),brokers[i]->getOutGate());
+			}
+		}
+	}
+	//step 1: add the subscription also in our DB
+	neighboursMap.addSubscription(stn,topic);
+	cancelAndDelete(sm);
+}
+
+void AcyclicBroker::handleUnsubscription(UnsubscriptionMessage* um){
+	neighboursMap.removeSubscription(um->getUnsubscriber(),um->getTopic());
+	std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(um->getTopic());
+	if (subscribers.size()<=0){ //means we have no subscriber left for that
+		std::vector<NeighbourEntry*> brokers = neighboursMap.getBrokersVector();
+			for (unsigned int i=0; i<brokers.size();i++){
+				if (brokers[i]->getNeighbour()!=um->getUnsubscriber()){ //we dont want to send it back to where it came from
+				send(new UnsubscriptionMessage(this,um->getTopic()),brokers[i]->getOutGate());
+			}
+		}
+	//} else if (subscribers.size()==1 && dynamic_cast<Client*>(subscribers[0])==NULL){
+		//means we have a hanging broker. We should unsubscribe from him
+	//	send (new UnsubscriptionMessage(this,um->getTopic()),subscribers[0]->getOutGate());
+	}
+	cancelAndDelete(um);
+}
+
+void AcyclicBroker::handleConnectionRequest(ConnectionRequestMessage* crm) {
+	//TODO here you should separate between client gates, and broker gates (and produce corrisponding mappings, with subscribings, etc.. )
+	//TODO also, it should be handled the case in which the broker is out of Free Gates, in which case he should return an error Message (not available, something like this)
+	STNode* stn = crm->getRequesterNode();
+	cGate* outGate = getFreeOutputGate();
+	outGate->connectTo(stn->getFreeInputGate());
+	neighboursMap.addMapping(stn, outGate);
+
+	if (dynamic_cast<Broker*>(stn)!=NULL){//means we must fill him up with our subscriptions
+		std::vector<int> subscriptions = neighboursMap.getSubscriptions();
+		for (unsigned int i=0;i<subscriptions.size();i++){
+			send(new SubscriptionMessage(this,subscriptions[i]),outGate);
+		}
+	}
+	cancelAndDelete(crm);
 }

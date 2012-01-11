@@ -13,28 +13,20 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef STNODE_H_
-#define STNODE_H_
+#include "PublishMessage.h"
 
-#include <csimplemodule.h>
+PublishMessage::PublishMessage(STNode* stn, int t) {
+	messageType = PUBLISH_MESSAGE;
+	topic = t;
+	sender = stn;
+}
 
-class STNode: public cSimpleModule {
-public:
-	STNode();
-	virtual ~STNode();
+PublishMessage::~PublishMessage() {}
 
-	virtual cGate* getFreeInputGate();
-	void setNSGate(cGate *nsGate);
+int PublishMessage::getTopic(){
+	return topic;
+}
 
-	bool isAlive();
-protected:
-	bool alive;
-	cMessage *wakeUpDelayMsg;
-	cMessage *sleepDelayMsg;
-
-	cGate* getNSGate();
-
-	static const int NR_TOPICS = 4; //€[0;4] No negative topics!
-};
-
-#endif /* STNODE_H_ */
+STNode* PublishMessage::getSender(){
+	return sender;
+}

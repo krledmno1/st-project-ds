@@ -25,23 +25,27 @@ Broker::Broker() {}
 Broker::~Broker() {}
 
 void Broker::initialize() {
-	scheduleAt(par("WakeUpDelay"), wakeUpMsg);
+	scheduleAt(par("WakeUpDelay"), wakeUpDelayMsg);
 }
 void Broker::handleMessage(cMessage *msg) {
-	if (msg == wakeUpMsg) {
+	if (msg == wakeUpDelayMsg) {
 		wakeUp();
-	} else if (msg == sleepMsg) {
+	} else if (msg == sleepDelayMsg) {
 		sleep();
 	} else if (dynamic_cast<STMessage*>(msg) != NULL) {
 		STMessage* stm = dynamic_cast<STMessage*>(msg);
 		if (stm->getType() == stm->NAME_SERVER_MSG) {
 			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
 		} else if (stm->getType() == stm->CONNECTION_REQUEST_MSG) {
-			handleConnectionRequest(
-					dynamic_cast<ConnectionRequestMessage*>(msg));
+			handleConnectionRequest(dynamic_cast<ConnectionRequestMessage*>(msg));
 		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG) {
-			handleDisconnectionRequest(
-					dynamic_cast<DisconnectionRequestMessage*>(msg));
+			handleDisconnectionRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
+		} else if (stm->getType() == stm->SUBSCRIPTION_MESSAGE) {
+			handleSubscription(dynamic_cast<SubscriptionMessage*>(msg));
+		} else if (stm->getType() == stm->UNSUBSCRIPTION_MESSAGE) {
+			handleUnsubscription(dynamic_cast<UnsubscriptionMessage*>(msg));
+		} else if (stm->getType() == stm->PUBLISH_MESSAGE) {
+			handlePublish(dynamic_cast<PublishMessage*>(msg));
 		} else {
 			EV << "Broker: Unknown STMessage type \n";
 		}
@@ -59,7 +63,7 @@ void Broker::sleep() {
 	//step0: decide if I can sleep (if I'm the only broker present, means I cannot sleep) Thus, I check if I have any connected Brokers
 	//TODO what if in the same time 2 connected brokers decide to disconnect? Hell will break loose, we need to use a sort of "locking" mechanism in this
 	if (neighboursMap.hasBrokers() == false) { //it means we cannot sleep, we reschedule the sleep
-		scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
+		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 		EV << "Cannot sleep, I'm alone";
 		return;
 	}
@@ -75,7 +79,7 @@ void Broker::sleep() {
 		}
 	}
 	//step3: schedule a rewake
-	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpMsg);
+	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }
 
 void Broker::handleNameServerMessage(NSMessage* nsm) {
@@ -84,7 +88,8 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 		cGate* myGate = getFreeOutputGate();
 		cGate* hisGate = requestedNode->getFreeInputGate();
 		if (myGate == NULL || hisGate == NULL) { //retry later
-			scheduleAt(par("WakeUpDelay"), wakeUpMsg);
+			scheduleAt(par("WakeUpDelay"), wakeUpDelayMsg);
+			cancelAndDelete(nsm);
 			return;
 		}
 		myGate->connectTo(hisGate);
@@ -93,17 +98,13 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 		send(new ConnectionRequestMessage(this), myGate);
 		cancelAndDelete(nsm);
 	} //we assume we're the first Broker registering to the network
-	scheduleAt(simTime() + par("SleepDelay"), sleepMsg);
+	scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 }
 
 void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 	//TODO here you should separate between client gates, and broker gates (and produce corrisponding mappings, with subscribings, etc.. )
 	//TODO also, it should be handled the case in which the broker is out of Free Gates, in which case he should return an error Message (not available, something like this)
 	STNode* stn = crm->getRequesterNode();
-	if (stn == NULL) {
-		EV << "Broker: RequesterNode is NULL. Big Error, must check";
-		return;
-	}
 	cGate* outGate = getFreeOutputGate();
 	outGate->connectTo(stn->getFreeInputGate());
 
@@ -161,3 +162,7 @@ cGate* Broker::getFreeOutputGate() {
 	}
 	return NULL;
 }
+//I do not handle in any way the P/S in the Broker
+void Broker::handleSubscription(SubscriptionMessage* sm){cancelAndDelete(sm);}
+void Broker::handleUnsubscription(UnsubscriptionMessage* um){cancelAndDelete(um);}
+void Broker::handlePublish(PublishMessage* pm){cancelAndDelete(pm);}

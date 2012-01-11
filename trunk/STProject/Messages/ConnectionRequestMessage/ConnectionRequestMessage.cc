@@ -17,7 +17,6 @@
 
 ConnectionRequestMessage::ConnectionRequestMessage(STNode* stn) {
 	messageType = CONNECTION_REQUEST_MSG;
-
 	requesterNode = stn;
 }
 ConnectionRequestMessage::~ConnectionRequestMessage() {}

@@ -30,6 +30,10 @@ public:
 
 protected:
 	virtual void sleep();
+	virtual void handleSubscription(SubscriptionMessage* sm);
+	virtual void handleConnectionRequest(ConnectionRequestMessage* crm);
+	virtual void handlePublish(PublishMessage* pm);
+	virtual void handleUnsubscription(UnsubscriptionMessage* um);
 };
 
 #endif /* ACYCLICBROKER_H_ */

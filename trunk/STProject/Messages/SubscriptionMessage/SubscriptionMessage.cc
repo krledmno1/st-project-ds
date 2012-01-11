@@ -13,28 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef STNODE_H_
-#define STNODE_H_
+#include "SubscriptionMessage.h"
 
-#include <csimplemodule.h>
+SubscriptionMessage::SubscriptionMessage(STNode* s, int t) {
+	messageType = SUBSCRIPTION_MESSAGE;
+	subscriber = s;
+	topic = t;
+}
 
-class STNode: public cSimpleModule {
-public:
-	STNode();
-	virtual ~STNode();
+SubscriptionMessage::~SubscriptionMessage() {}
 
-	virtual cGate* getFreeInputGate();
-	void setNSGate(cGate *nsGate);
-
-	bool isAlive();
-protected:
-	bool alive;
-	cMessage *wakeUpDelayMsg;
-	cMessage *sleepDelayMsg;
-
-	cGate* getNSGate();
-
-	static const int NR_TOPICS = 4; //€[0;4] No negative topics!
-};
-
-#endif /* STNODE_H_ */
+STNode* SubscriptionMessage::getSubscriber(){
+	return subscriber;
+}
+int SubscriptionMessage::getTopic(){
+	return topic;
+}
