@@ -28,9 +28,15 @@ public:
 	cGate* getOutGate();
 	void setOutGate(cGate* og);
 
+	void addSubscription(int topic);
+	void removeSubscription(int topic);
+	std::vector<int> getSubscriptions();
+	bool isSubscribed(int topic); //true IFF is registered to topic
+
 private:
 	STNode* neighbourNode;
 	cGate* myOutGate;
+	std::vector<int> subscriptions;
 };
 
 #endif /* NEIGHBOURENTRY_H_ */

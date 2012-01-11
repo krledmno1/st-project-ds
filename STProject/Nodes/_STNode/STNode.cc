@@ -27,12 +27,12 @@ static cGate *nsGate;
 //_____________Constructing
 STNode::STNode() {
 	alive = false;
-	wakeUpMsg = new cMessage("wake up");
-	sleepMsg = new cMessage("go to sleep");
+	wakeUpDelayMsg = new cMessage("wake up");
+	sleepDelayMsg = new cMessage("go to sleep");
 }
 STNode::~STNode() {
-	cancelAndDelete(wakeUpMsg);
-	cancelAndDelete(sleepMsg);
+	cancelAndDelete(wakeUpDelayMsg);
+	cancelAndDelete(sleepDelayMsg);
 }
 
 //_____________Front Panel

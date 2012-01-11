@@ -20,6 +20,9 @@ INCLUDE_PATH = \
     -IMessages/ConnectionRequestMessage \
     -IMessages/DisconnectionRequestMessage \
     -IMessages/NSMsg \
+    -IMessages/PublishMessage \
+    -IMessages/SubscriptionMessage \
+    -IMessages/UnsubscriptionMessage \
     -IMessages/_Super \
     -INodes \
     -INodes/Brokers \
@@ -45,6 +48,9 @@ OBJS = \
     $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o \
     $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o \
     $O/Messages/NSMsg/NSMessage.o \
+    $O/Messages/PublishMessage/PublishMessage.o \
+    $O/Messages/SubscriptionMessage/SubscriptionMessage.o \
+    $O/Messages/UnsubscriptionMessage/UnsubscriptionMessage.o \
     $O/Messages/_Super/STMessage.o \
     $O/Nodes/Brokers/Broker.o \
     $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o \
@@ -131,6 +137,9 @@ clean:
 	-rm -f Messages/ConnectionRequestMessage/*_m.cc Messages/ConnectionRequestMessage/*_m.h
 	-rm -f Messages/DisconnectionRequestMessage/*_m.cc Messages/DisconnectionRequestMessage/*_m.h
 	-rm -f Messages/NSMsg/*_m.cc Messages/NSMsg/*_m.h
+	-rm -f Messages/PublishMessage/*_m.cc Messages/PublishMessage/*_m.h
+	-rm -f Messages/SubscriptionMessage/*_m.cc Messages/SubscriptionMessage/*_m.h
+	-rm -f Messages/UnsubscriptionMessage/*_m.cc Messages/UnsubscriptionMessage/*_m.h
 	-rm -f Messages/_Super/*_m.cc Messages/_Super/*_m.h
 	-rm -f Nodes/*_m.cc Nodes/*_m.h
 	-rm -f Nodes/Brokers/*_m.cc Nodes/Brokers/*_m.h
@@ -144,7 +153,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -159,10 +168,25 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/_STNode/STNode.h
+$O/Messages/PublishMessage/PublishMessage.o: Messages/PublishMessage/PublishMessage.cc \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/_STNode/STNode.h
+$O/Messages/SubscriptionMessage/SubscriptionMessage.o: Messages/SubscriptionMessage/SubscriptionMessage.cc \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/_STNode/STNode.h
+$O/Messages/UnsubscriptionMessage/UnsubscriptionMessage.o: Messages/UnsubscriptionMessage/UnsubscriptionMessage.cc \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
+	Messages/_Super/STMessage.h \
 	Nodes/_STNode/STNode.h
 $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 	Messages/_Super/STMessage.h
@@ -170,6 +194,9 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
@@ -180,11 +207,15 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/AcyclicBroker/AcyclicBroker.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Client.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
@@ -193,15 +224,22 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Client.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
@@ -212,6 +250,9 @@ $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
 	Messages/_Super/STMessage.h \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \

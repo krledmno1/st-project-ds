@@ -15,11 +15,10 @@
 
 #include "NeighboursMap.h"
 #include "Broker.h"
+#include "Client.h"
 
-NeighboursMap::NeighboursMap() {
-}
-NeighboursMap::~NeighboursMap() {
-}
+NeighboursMap::NeighboursMap() {}
+NeighboursMap::~NeighboursMap() {}
 
 void NeighboursMap::addMapping(STNode* stn, cGate* outGate) {
 	//firstly I check if there isn't already this node registered
@@ -45,6 +44,7 @@ cGate* NeighboursMap::getOutputGate(STNode* stn) {
 }
 
 std::vector<NeighbourEntry*> NeighboursMap::getNeighboursVector() {
+	//TODO instead of posting the neighboursVector (which also from a point of view of SE is wrong, I should return a new clean vector with no NULL entry, as I did with the getBrokersVector()
 	return neighboursVector;
 }
 
@@ -100,4 +100,68 @@ void NeighboursMap::removeMapping(STNode* stn) {
 		}
 	}
 	EV	<< "NeighboursMap: ERROR The node to be removed from mappings wasn't found!!! (This shouldn't happen)";
+}
+
+int maxTopic = 0; //very hackish, but quick to implement getSubcriptions();
+void NeighboursMap::addSubscription(STNode* stn, int topic){
+	NeighbourEntry* ne = getEntry(stn);
+	if (ne==NULL){
+		EV << "The node which subscribed has been removed";
+		return;
+	}
+	ne->addSubscription(topic);
+	if (topic>maxTopic) maxTopic = topic;
+}
+void NeighboursMap::removeSubscription(STNode* stn, int topic){
+	NeighbourEntry* ne = getEntry(stn);
+		if (ne==NULL){
+			EV << "The node which unsubscribed has been removed";
+			return;
+		}
+		ne->removeSubscription(topic);
+}
+
+std::vector<NeighbourEntry*> NeighboursMap::getSubscribers(int topic){
+	std::vector<NeighbourEntry*> subscribers;
+	for (unsigned int i=0;i<neighboursVector.size();i++){
+		if (neighboursVector[i]!=NULL){
+			if (neighboursVector[i]->isSubscribed(topic)){
+				subscribers.push_back(neighboursVector[i]);
+			}
+		}
+	}
+	return subscribers;
+}
+
+bool NeighboursMap::hasClientSubscribers(int topic){
+	for (unsigned int i=0;i<neighboursVector.size();i++){
+		if (neighboursVector[i]!=NULL){
+			if (dynamic_cast<Client*>(neighboursVector[i]->getNeighbour())!=NULL && neighboursVector[i]->isSubscribed(topic)){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+std::vector<int> NeighboursMap::getSubscriptions(){
+	std::vector<int> subscriptions;
+	//TODO this is totally inefficient, but quick to implement. To optimize, just like the client we should keep a boolean array with all the subscriptions, and return easily the existing subscriptions. The challenge would be to make efficient the unsubscriptions also (instead of bool, use int, and count them?)
+	for (int i=0;i<=maxTopic;i++){
+		if (getSubscribers(i).size()>0){
+			subscriptions.push_back(i);
+		}
+	}
+	return subscriptions;
+}
+
+NeighbourEntry* NeighboursMap::getEntry(STNode* stn){
+	for (unsigned int i=0; i<neighboursVector.size();i++){
+		if (neighboursVector[i]!=NULL){
+			if (neighboursVector[i]->getNeighbour() == stn){ //found it
+				return neighboursVector[i];
+			}
+		}
+	}
+	return NULL;
 }

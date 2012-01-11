@@ -21,6 +21,9 @@
 #include "ConnectionRequestMessage.h"
 #include "DisconnectionRequestMessage.h"
 #include "NeighboursMap.h"
+#include "SubscriptionMessage.h"
+#include "UnsubscriptionMessage.h"
+#include "PublishMessage.h"
 
 /*
  * The Broker, in this form, is able only to handle connections. It has nothing to do with passing messages around, or maintaining the topology, this will be taken care of by the
@@ -39,12 +42,15 @@ protected:
 
 	virtual void handleBrokerDisconnection(Broker* b);
 	virtual void handleClientDisconnection(STNode* c); //Client* would produce circular dependency
+	virtual void handleConnectionRequest(ConnectionRequestMessage* crm);
 	virtual void sleep();
+	virtual void handleSubscription(SubscriptionMessage* sm);
+	virtual void handleUnsubscription(UnsubscriptionMessage* um);
+	virtual void handlePublish(PublishMessage* pm);
 	NeighboursMap neighboursMap;
 private:
 	void wakeUp();
 	void handleNameServerMessage(NSMessage* nsm);
-	void handleConnectionRequest(ConnectionRequestMessage* crm);
 	void handleDisconnectionRequest(DisconnectionRequestMessage* drm);
 };
 

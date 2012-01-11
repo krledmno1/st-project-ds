@@ -21,26 +21,33 @@
 #include <vector>
 
 /*
- * Obs: The mapping being a vector[], i cannot remove entries
+ * Obs: The mapping being a vector[], i cannot remove entries. I instead nullify the entries that have to be removed. Thus watchout for NULL bombs...
+ *Note: the map will also keep track of all the client's topic subscriptions. I wonder if I can unify the subscription mapping between clients and brokers
  */
 class NeighboursMap {
 public:
 	NeighboursMap();
 	virtual ~NeighboursMap();
-
+//__Connections Management
 	void addMapping(STNode* stn, cGate* outGate); //if a mapping exists, gets overwritten, otherwise a new one
 	void removeMapping(STNode* stn);
-
 	cGate* getOutputGate(STNode* stn);
 
+//__Subscriptions
+	void addSubscription(STNode* stn, int topic);
+	void removeSubscription(STNode* stn, int topic);
+	std::vector<NeighbourEntry*> getSubscribers(int topic);
+	bool hasClientSubscribers(int topic);
+	std::vector<int> getSubscriptions(); //returns all the topics to which this Broker is subscribed (by his clients, or neighbouring brokers)
+
+//__General purpose tasks
 	bool hasBrokers(); //it means, it has a broker, regardless of clients
-
 	std::vector<NeighbourEntry*> getNeighboursVector();
-
 	std::vector<NeighbourEntry*> getBrokersVector();
 
 private:
 	std::vector<NeighbourEntry*> neighboursVector; /*Note, the vector MAY HAVE NULL ENTRIES */
+	NeighbourEntry* getEntry(STNode* stn);
 };
 
 #endif /* NEIGHBOURSMAP_H_ */

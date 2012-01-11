@@ -35,8 +35,17 @@ protected:
 private:
 	void wakeUp();
 	void goSleep();
+	void subscribe();
+	void unsubscribe();
+	void publish();
+	//external message handling
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
 	void handleBrokerDisconnectionRequest(); //if a broker wishes to disconnect, it is client's task to find another broker
+
+	cMessage* publishDelayMsg;
+	cMessage* subscribeDelayMsg;
+	cMessage* unsubscribeDelayMsg;
+	bool topicsSubscribed[NR_TOPICS];
 };
 
 #endif /* CLIENT_H_ */
