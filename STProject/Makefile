@@ -30,6 +30,7 @@ INCLUDE_PATH = \
     -INodes/Brokers/NeighboursMap \
     -INodes/Clients \
     -INodes/NameServer \
+    -INodes/SubscriptionMonitor \
     -INodes/_STNode
 
 # Additional object and library files to link with
@@ -58,6 +59,7 @@ OBJS = \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
     $O/Nodes/Clients/Client.o \
     $O/Nodes/NameServer/NameServer.o \
+    $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
     $O/Nodes/_STNode/STNode.o
 
 # Message files
@@ -147,13 +149,14 @@ clean:
 	-rm -f Nodes/Brokers/NeighboursMap/*_m.cc Nodes/Brokers/NeighboursMap/*_m.h
 	-rm -f Nodes/Clients/*_m.cc Nodes/Clients/*_m.h
 	-rm -f Nodes/NameServer/*_m.cc Nodes/NameServer/*_m.h
+	-rm -f Nodes/SubscriptionMonitor/*_m.cc Nodes/SubscriptionMonitor/*_m.h
 	-rm -f Nodes/_STNode/*_m.cc Nodes/_STNode/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/_STNode/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -202,6 +205,7 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/AcyclicBroker.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -216,6 +220,7 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
@@ -232,6 +237,7 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -245,6 +251,7 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -259,7 +266,10 @@ $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
 	Nodes/NameServer/NameServer.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h
+$O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o: Nodes/SubscriptionMonitor/SubscriptionMonitor.cc \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h
 $O/Nodes/_STNode/STNode.o: Nodes/_STNode/STNode.cc \
 	Nodes/_STNode/STNode.h
 

@@ -21,6 +21,7 @@
 #include <omnetpp.h>
 #include "Broker.h"
 #include "cgate.h"
+#include "SubscriptionMonitor.h"
 
 class Client: public STNode {
 public:
@@ -45,7 +46,7 @@ private:
 	cMessage* publishDelayMsg;
 	cMessage* subscribeDelayMsg;
 	cMessage* unsubscribeDelayMsg;
-	bool topicsSubscribed[NR_TOPICS];
+	SubscriptionMonitor* subscriptionMonitor;
 };
 
 #endif /* CLIENT_H_ */

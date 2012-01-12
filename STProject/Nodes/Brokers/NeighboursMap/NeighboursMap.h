@@ -38,13 +38,14 @@ public:
 	void removeSubscription(STNode* stn, int topic);
 	std::vector<NeighbourEntry*> getSubscribers(int topic);
 	bool hasClientSubscribers(int topic);
+	bool isSubscribed(STNode* stn, int topic);
 	std::vector<int> getSubscriptions(); //returns all the topics to which this Broker is subscribed (by his clients, or neighbouring brokers)
 
 //__General purpose tasks
 	bool hasBrokers(); //it means, it has a broker, regardless of clients
 	std::vector<NeighbourEntry*> getNeighboursVector();
 	std::vector<NeighbourEntry*> getBrokersVector();
-
+	std::vector<int> getSubscriptions(STNode* stnode);
 private:
 	std::vector<NeighbourEntry*> neighboursVector; /*Note, the vector MAY HAVE NULL ENTRIES */
 	NeighbourEntry* getEntry(STNode* stn);
