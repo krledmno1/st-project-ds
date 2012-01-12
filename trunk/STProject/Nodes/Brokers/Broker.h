@@ -47,11 +47,11 @@ protected:
 	virtual void handleSubscription(SubscriptionMessage* sm);
 	virtual void handleUnsubscription(UnsubscriptionMessage* um);
 	virtual void handlePublish(PublishMessage* pm);
+	virtual void handleDisconnectionRequest(DisconnectionRequestMessage* drm);
 	NeighboursMap neighboursMap;
 private:
 	void wakeUp();
 	void handleNameServerMessage(NSMessage* nsm);
-	void handleDisconnectionRequest(DisconnectionRequestMessage* drm);
 };
 
 #endif /* BROKER_H_ */

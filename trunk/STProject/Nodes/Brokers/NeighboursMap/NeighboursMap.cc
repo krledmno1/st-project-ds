@@ -144,6 +144,11 @@ bool NeighboursMap::hasClientSubscribers(int topic){
 	return false;
 }
 
+bool NeighboursMap::isSubscribed(STNode* stn, int topic){
+	NeighbourEntry* ne = getEntry(stn);
+	if (ne==NULL) return false;
+	return ne->isSubscribed(topic);
+}
 std::vector<int> NeighboursMap::getSubscriptions(){
 	std::vector<int> subscriptions;
 	//TODO this is totally inefficient, but quick to implement. To optimize, just like the client we should keep a boolean array with all the subscriptions, and return easily the existing subscriptions. The challenge would be to make efficient the unsubscriptions also (instead of bool, use int, and count them?)
@@ -153,6 +158,15 @@ std::vector<int> NeighboursMap::getSubscriptions(){
 		}
 	}
 	return subscriptions;
+}
+
+std::vector<int> NeighboursMap::getSubscriptions(STNode* stnode){
+	std::vector<int> defaultResponse(0); //to avoid returning pointers, damn C++, I will send an empty structure
+	NeighbourEntry* ne = getEntry(stnode);
+	if (ne==NULL){
+		return defaultResponse;
+	}
+	return ne->getSubscriptions();
 }
 
 NeighbourEntry* NeighboursMap::getEntry(STNode* stn){

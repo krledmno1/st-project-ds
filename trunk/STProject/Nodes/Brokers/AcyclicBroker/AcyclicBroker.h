@@ -17,7 +17,7 @@
 #define ACYCLICBROKER_H_
 
 #include "Broker.h"
-
+#include "SubscriptionMonitor.h"
 /**
  * This Broker will implement all the behavior needed for an Acyclic Broker. That means, that every single broker will try do its best in order to maintain an acyclic topology (particularly this issue
  * arises when a Broker decides to disconnect and leaves various clusters of Brokers unconnected unless he does something about it)
@@ -34,6 +34,10 @@ protected:
 	virtual void handleConnectionRequest(ConnectionRequestMessage* crm);
 	virtual void handlePublish(PublishMessage* pm);
 	virtual void handleUnsubscription(UnsubscriptionMessage* um);
+
+	virtual void handleDisconnectionRequest(DisconnectionRequestMessage* drm); //primarily is the same the basic broker, just that I must also check any possible unsubscriptions
+private:
+	SubscriptionMonitor* subscriptionMonitor;
 };
 
 #endif /* ACYCLICBROKER_H_ */

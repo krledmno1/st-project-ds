@@ -123,24 +123,22 @@ void Broker::handleDisconnectionRequest(DisconnectionRequestMessage* drm) {
 }
 
 void Broker::handleBrokerDisconnection(Broker* b) {
-	//TODO
 	cGate* myOutputGate = neighboursMap.getOutputGate(b);
 	if (myOutputGate == NULL) {
 		EV << "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
 		return;
 	}
 	myOutputGate->disconnect();
-	neighboursMap.removeMapping(b);
+	neighboursMap.removeMapping(b); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way
 }
 void Broker::handleClientDisconnection(STNode* c) {
 	cGate* myOutputGate = neighboursMap.getOutputGate(c);
 	if (myOutputGate == NULL) {
-		EV
-					<< "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
+		EV	<< "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
 		return;
 	}
 	myOutputGate->disconnect();
-	neighboursMap.removeMapping(c);
+	neighboursMap.removeMapping(c); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way
 }
 
 cGate* Broker::getFreeInputGate() {

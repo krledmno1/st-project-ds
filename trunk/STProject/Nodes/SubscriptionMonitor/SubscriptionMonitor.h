@@ -13,28 +13,31 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef STNODE_H_
-#define STNODE_H_
+#ifndef SUBSCRIPTIONMONITOR_H_
+#define SUBSCRIPTIONMONITOR_H_
+#include <vector>
 
-#include <csimplemodule.h>
-
-class STNode: public cSimpleModule {
+/*
+ * This component has the simple role of keeping track of whether the owner
+ * is subscribed to a topic or not.
+ */
+class SubscriptionMonitor {
 public:
-	STNode();
-	virtual ~STNode();
+	SubscriptionMonitor(int nrTopics);
+	virtual ~SubscriptionMonitor();
 
-	virtual cGate* getFreeInputGate();
-	void setNSGate(cGate *nsGate);
+	void subscribe(int topic);
+	void unsubscribe(int topic);
+	void unsubscribeAll();
 
-	bool isAlive();
-protected:
-	bool alive;
-	cMessage *wakeUpDelayMsg;
-	cMessage *sleepDelayMsg;
+	bool isSubscribed(int topic);
 
-	cGate* getNSGate();
+	int getRandomSubscribedTopic(); //-1 if no subscribed topic
+	int getRandomUnsubscribedTopic(); //-1 if all topics are subscribed
 
-	static const int NR_TOPICS = 4; //€[0;3] and No negative topics!
+private:
+	std::vector<bool> subscriptions;
+	int size;
 };
 
-#endif /* STNODE_H_ */
+#endif /* SUBSCRIPTIONMONITOR_H_ */

@@ -24,10 +24,10 @@
 Define_Module(Client);
 
 Client::Client() {
+	subscriptionMonitor = new SubscriptionMonitor(NR_TOPICS);
 	publishDelayMsg = new cMessage("Publish");
 	subscribeDelayMsg = new cMessage("Subscribe");
 	unsubscribeDelayMsg = new cMessage("Unsubscribe");
-	srand(time(0));
 }
 Client::~Client() {
 	cancelAndDelete(publishDelayMsg);
@@ -78,52 +78,36 @@ void Client::goSleep() {
 	cancelEvent(subscribeDelayMsg);
 	cancelEvent(unsubscribeDelayMsg);
 	cancelEvent(publishDelayMsg);
-	for (int i=0;i<NR_TOPICS;i++){topicsSubscribed[i] = false;}
+	subscriptionMonitor->unsubscribeAll();
 	send(new DisconnectionRequestMessage(this), gate("out"));
 	gate("out")->disconnect();
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }
 
 void Client::subscribe(){
-	//First, if we're subscribed to all topics, no point in subscribing
-	bool full = true;
-	for (int i=0;i<NR_TOPICS && full;i++) {if (!topicsSubscribed[i]) full = false;}
-	if (full){//means we dont need to subscribe to anything, so just reschedule the damn thing
-		EV << "I'm subscribed to all the possible topics";
-		scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
+	int topicChosen = subscriptionMonitor->getRandomUnsubscribedTopic();
+	if (topicChosen<0){
+		EV << "I got all subscriptions. Can't subscribe to anything anymore";
 		return;
 	}
-	//Now we're sure we wont lock out searching for unsubscribed topics
-	int topicChosen = rand() % (NR_TOPICS+1); //because topics range is [0;NR_TOPICS]
-	while (topicsSubscribed[topicChosen]){ //this way we make sure we wont subscribe for somthing we subscribed already
-		topicChosen = rand() % (NR_TOPICS+1);
-	}
+	subscriptionMonitor->subscribe(topicChosen);
 	EV << "Subscribing " << topicChosen;
-	topicsSubscribed[topicChosen] = true;
 	send(new SubscriptionMessage(this,topicChosen), gate("out"));
 	scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
 }
 void Client::unsubscribe(){
-	//first, make sure we subscribed to something
-	bool empty = true;
-	for (int i=0;i<NR_TOPICS && empty; i++){if (topicsSubscribed[i]) empty = false;}
-	if (empty){
+	int topicChosen = subscriptionMonitor->getRandomSubscribedTopic();
+	if (topicChosen<0){
 		EV << "I'm not subscribed to anything yet";
-		scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
 		return;
 	}
-	//now we're sure we wont lock out searching for subscribed topics
-	int topicChosen = rand() % (NR_TOPICS+1); //because topics range is [0;NR_TOPICS]
-	while (!topicsSubscribed[topicChosen]){ //this way we make sure we wont unsubscribe for something we unsubscribed already
-		topicChosen = rand() % (NR_TOPICS+1);
-	}
+	subscriptionMonitor->unsubscribe(topicChosen);
 	EV << "Unsubscribing " << topicChosen;
-	topicsSubscribed[topicChosen] = false;
 	send(new UnsubscriptionMessage(this,topicChosen),gate("out"));
 	scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
 }
 void Client::publish(){
-	int topicChosen = rand() % (NR_TOPICS+1); //because topics range is [0;NR_TOPICS]
+	int topicChosen = rand() % (NR_TOPICS);
 	EV << "Publishing " << topicChosen;
 	send(new PublishMessage(this, topicChosen),gate("out"));
 	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
@@ -147,7 +131,7 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 	cancelAndDelete(nsm);
 	//if I was redirected, I should resubscribe to all my topics
 	for (int i=0;i<NR_TOPICS;i++){
-		if (topicsSubscribed[i]){
+		if (subscriptionMonitor->isSubscribed(i)){
 			send(new SubscriptionMessage(this,i), gate("out"));
 		}
 	}
