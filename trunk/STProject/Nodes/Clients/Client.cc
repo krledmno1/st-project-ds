@@ -62,9 +62,11 @@ void Client::handleMessage(cMessage *msg) {
 			cancelAndDelete(msg);
 		} else {
 			EV << "Client: Unrecognized STMessage type \n";
+			cancelAndDelete(msg);
 		}
 	} else {
 		EV << "Client: Unrecognized message type \n";
+		cancelAndDelete(msg);
 	}
 }
 

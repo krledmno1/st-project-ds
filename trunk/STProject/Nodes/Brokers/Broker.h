@@ -26,7 +26,8 @@
 #include "PublishMessage.h"
 
 /*
- * The Broker, in this form, is able only to handle connections. It has nothing to do with passing messages around, or maintaining the topology, this will be taken care of by the
+ * The Broker, in this form, provides the basic facility of handling connections. It has nothing to do with passing messages around (Publish/Subcribe), or maintaining any topology of the network,
+ * in fact, once the broker wishes to disconnect, it will break/fragment the entire network. This will be taken care of by further extensions (Acyclic/Cyclic Brokers)
  */
 
 class Broker: public STNode {
@@ -40,8 +41,6 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 
-	virtual void handleBrokerDisconnection(Broker* b);
-	virtual void handleClientDisconnection(STNode* c); //Client* would produce circular dependency
 	virtual void handleConnectionRequest(ConnectionRequestMessage* crm);
 	virtual void sleep();
 	virtual void handleSubscription(SubscriptionMessage* sm);

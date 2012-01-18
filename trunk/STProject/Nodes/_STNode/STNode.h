@@ -18,6 +18,12 @@
 
 #include <csimplemodule.h>
 
+/*
+ * This is the superclass of all the nodes of our project.
+ * Mainly it has been created such that it hardcodes the address of the Naming Service (through a static pointer).
+ * It also provides the facility of freeInputGates, accessible to any other node that wishes to communicate.
+ */
+
 class STNode: public cSimpleModule {
 public:
 	STNode();
@@ -26,9 +32,7 @@ public:
 	virtual cGate* getFreeInputGate();
 	void setNSGate(cGate *nsGate);
 
-	bool isAlive();
 protected:
-	bool alive;
 	cMessage *wakeUpDelayMsg;
 	cMessage *sleepDelayMsg;
 
