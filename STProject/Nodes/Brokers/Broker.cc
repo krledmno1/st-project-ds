@@ -113,32 +113,14 @@ void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 }
 
 void Broker::handleDisconnectionRequest(DisconnectionRequestMessage* drm) {
-	Broker* b = dynamic_cast<Broker*>(drm->getRequesterNode());
-	if (b != NULL) {
-		handleBrokerDisconnection(b);
-	} else {
-		handleClientDisconnection(drm->getRequesterNode());
+	cGate* myOutputGate = neighboursMap.getOutputGate(drm->getRequesterNode());
+	if (myOutputGate==NULL){
+		EV << "Broker: big error, the disconnection requesting node is not known to me (not mapped to any of my outGates)";
+		return;
 	}
+	myOutputGate->disconnect();
+	neighboursMap.removeMapping(drm->getRequesterNode()); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way, to see if we need to unsubscribe to any particular topic
 	cancelAndDelete(drm);
-}
-
-void Broker::handleBrokerDisconnection(Broker* b) {
-	cGate* myOutputGate = neighboursMap.getOutputGate(b);
-	if (myOutputGate == NULL) {
-		EV << "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
-		return;
-	}
-	myOutputGate->disconnect();
-	neighboursMap.removeMapping(b); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way
-}
-void Broker::handleClientDisconnection(STNode* c) {
-	cGate* myOutputGate = neighboursMap.getOutputGate(c);
-	if (myOutputGate == NULL) {
-		EV	<< "Broker: The disconnection requesting Node is not known to me (not mapped to any of my outGates). Big ERROR";
-		return;
-	}
-	myOutputGate->disconnect();
-	neighboursMap.removeMapping(c); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way
 }
 
 cGate* Broker::getFreeInputGate() {
