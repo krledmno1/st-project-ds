@@ -17,12 +17,13 @@
 #define STNODE_H_
 
 #include <csimplemodule.h>
-
+#include <NetworkConditionTable.h>
 /*
  * This is the superclass of all the nodes of our project.
  * Mainly it has been created such that it hardcodes the address of the Naming Service (through a static pointer).
  * It also provides the facility of freeInputGates, accessible to any other node that wishes to communicate.
  */
+class NetworkConditionTable;
 
 class STNode: public cSimpleModule {
 public:
@@ -32,13 +33,17 @@ public:
 	virtual cGate* getFreeInputGate();
 	void setNSGate(cGate *nsGate);
 
+
+
 protected:
 	cMessage *wakeUpDelayMsg;
 	cMessage *sleepDelayMsg;
 
 	cGate* getNSGate();
 
-	static const int NR_TOPICS = 4; //€[0;3] and No negative topics!
+	static NetworkConditionTable* conditionTable;
+	static const int NR_TOPICS = 4; //ï¿½[0;3] and No negative topics!
 };
+
 
 #endif /* STNODE_H_ */

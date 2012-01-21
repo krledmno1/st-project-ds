@@ -31,7 +31,10 @@ INCLUDE_PATH = \
     -INodes/Clients \
     -INodes/NameServer \
     -INodes/SubscriptionMonitor \
-    -INodes/_STNode
+    -INodes/_STNode \
+    -IUtilities \
+    -IUtilities/LinkedList \
+    -IUtilities/NetworkConditionTable
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -55,12 +58,15 @@ OBJS = \
     $O/Messages/_Super/STMessage.o \
     $O/Nodes/Brokers/Broker.o \
     $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o \
-    $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
+    $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Clients/Client.o \
     $O/Nodes/NameServer/NameServer.o \
     $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
-    $O/Nodes/_STNode/STNode.o
+    $O/Nodes/_STNode/STNode.o \
+    $O/Utilities/NetworkConditionTable/Map.o \
+    $O/Utilities/NetworkConditionTable/NetworkConditionTable.o \
+    $O/Utilities/NetworkConditionTable/KeyValue.o
 
 # Message files
 MSGFILES =
@@ -87,20 +93,10 @@ include $(CONFIGFILE)
 
 # Simulation kernel and user interface libraries
 OMNETPP_LIB_SUBDIR = $(OMNETPP_LIB_DIR)/$(TOOLCHAIN_NAME)
-OMNETPP_LIBS = -L"$(OMNETPP_LIB_SUBDIR)" -L"$(OMNETPP_LIB_DIR)" -loppmain$D $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
+OMNETPP_LIBS = -L"$(OMNETPP_LIB_SUBDIR)" -L"$(OMNETPP_LIB_DIR)" $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
 
 COPTS = $(CFLAGS)  $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
 MSGCOPTS = $(INCLUDE_PATH)
-
-# we want to recompile everything if COPTS changes,
-# so we store COPTS into $COPTS_FILE and have object
-# files depend on it (except when "make depend" was called)
-COPTS_FILE = $O/.last-copts
-ifneq ($(MAKECMDGOALS),depend)
-ifneq ("$(COPTS)","$(shell cat $(COPTS_FILE) 2>/dev/null || echo '')")
-$(shell $(MKPATH) "$O" && echo "$(COPTS)" >$(COPTS_FILE))
-endif
-endif
 
 #------------------------------------------------------------------------------
 # User-supplied makefile fragment(s)
@@ -122,7 +118,7 @@ $O/$(TARGET): $(OBJS)  $(wildcard $(EXTRA_OBJS)) Makefile
 
 .SUFFIXES: .cc
 
-$O/%.o: %.cc $(COPTS_FILE)
+$O/%.o: %.cc
 	@$(MKPATH) $(dir $@)
 	$(CXX) -c $(COPTS) -o $@ $<
 
@@ -151,125 +147,177 @@ clean:
 	-rm -f Nodes/NameServer/*_m.cc Nodes/NameServer/*_m.h
 	-rm -f Nodes/SubscriptionMonitor/*_m.cc Nodes/SubscriptionMonitor/*_m.h
 	-rm -f Nodes/_STNode/*_m.cc Nodes/_STNode/*_m.h
+	-rm -f Utilities/*_m.cc Utilities/*_m.h
+	-rm -f Utilities/LinkedList/*_m.cc Utilities/LinkedList/*_m.h
+	-rm -f Utilities/NetworkConditionTable/*_m.cc Utilities/NetworkConditionTable/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/_STNode/STNode.h
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h
 $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o: Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/_STNode/STNode.h
+	Messages/_Super/STMessage.h
 $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/PublishMessage/PublishMessage.h \
-	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
-	Nodes/_STNode/STNode.h
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/PublishMessage/PublishMessage.o: Messages/PublishMessage/PublishMessage.cc \
-	Messages/PublishMessage/PublishMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
-	Nodes/_STNode/STNode.h
+	Messages/PublishMessage/PublishMessage.h
 $O/Messages/SubscriptionMessage/SubscriptionMessage.o: Messages/SubscriptionMessage/SubscriptionMessage.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/_STNode/STNode.h
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h
 $O/Messages/UnsubscriptionMessage/UnsubscriptionMessage.o: Messages/UnsubscriptionMessage/UnsubscriptionMessage.cc \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
-	Nodes/_STNode/STNode.h
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 	Messages/_Super/STMessage.h
 $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Nodes/Clients/Client.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
-	Nodes/_STNode/STNode.h
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/AcyclicBroker.cc \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
-	Messages/PublishMessage/PublishMessage.h \
-	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
 	Nodes/Brokers/AcyclicBroker/AcyclicBroker.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
-	Nodes/Clients/Client.h \
-	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
-	Nodes/_STNode/STNode.h
-$O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/_STNode/STNode.h
-$O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/Clients/Client.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
+$O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Nodes/Clients/Client.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
+$O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Nodes/Clients/Client.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
-	Nodes/_STNode/STNode.h
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Messages/NSMsg/NSMessage.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Nodes/NameServer/NameServer.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
-	Messages/_Super/STMessage.h \
-	Nodes/Brokers/Broker.h \
-	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Nodes/Clients/Client.h \
-	Nodes/NameServer/NameServer.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
-	Nodes/_STNode/STNode.h
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o: Nodes/SubscriptionMonitor/SubscriptionMonitor.cc \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h
 $O/Nodes/_STNode/STNode.o: Nodes/_STNode/STNode.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
 	Nodes/_STNode/STNode.h
+$O/Utilities/NetworkConditionTable/KeyValue.o: Utilities/NetworkConditionTable/KeyValue.cc \
+	Utilities/NetworkConditionTable/KeyValue.h
+$O/Utilities/NetworkConditionTable/NetworkConditionTable.o: Utilities/NetworkConditionTable/NetworkConditionTable.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h
+$O/Utilities/NetworkConditionTable/Map.o: Utilities/NetworkConditionTable/Map.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h
 
