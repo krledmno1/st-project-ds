@@ -23,8 +23,8 @@
 	void NSMessage::setRequesterNode(STNode* r){requester = r;}
 	STNode* NSMessage::getRequester(){return requester;}
 
-	void NSMessage::setRequestedNode(STNode* r){requested = r;}
-	STNode* NSMessage::getRequestedNode(){return requested;}
+	void NSMessage::addRequestedNode(STNode* r){requested.addToBack(r);}
+	LinkedList<STNode>* NSMessage::getRequestedNodes(){return &requested;}
 //___________Construct
 NSMessage::NSMessage() {
 	messageType = NAME_SERVER_MSG;
@@ -33,5 +33,7 @@ NSMessage::NSMessage(STNode *_requester){
 	requester = _requester;
 	messageType = NAME_SERVER_MSG;
 }
-NSMessage::~NSMessage() {}
+NSMessage::~NSMessage() {
+	requested.removeAll();
+}
 

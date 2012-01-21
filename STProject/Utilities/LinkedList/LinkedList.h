@@ -23,7 +23,9 @@ class LinkedList
 public:
 	Node<T>* start;
 	Node<T>* end;
+	int size;
 	LinkedList();
+	int getSize();
 	void addToFront(T* n);
 	void addToBack(T* n);
 	T* removeFromFront();
@@ -41,6 +43,7 @@ Node<T>::Node()
 {
 	content = 0;
 	next = 0;
+
 }
 
 template<class T>
@@ -79,6 +82,7 @@ LinkedList<T>::LinkedList()
 {
 	start = 0;
 	end = 0;
+	size = 0;
 }
 
 template<class T>
@@ -119,6 +123,7 @@ void LinkedList<T>::addToFront(T* t)
 			start = node;
 		}
 	}
+	size++;
 }
 
 template<class T>
@@ -147,6 +152,7 @@ void LinkedList<T>::addToBack(T* t)
 		}
 
 	}
+	size++;
 	
 }
 
@@ -159,6 +165,7 @@ T* LinkedList<T>::removeFromFront()
 	}
 	else
 	{
+		size--;
 		if(start==end)
 		{
 			T* con;
@@ -258,6 +265,7 @@ T* LinkedList<T>::removeNode(T* n)
 	Node<T>* node = findBefore(n);
 	if(node!=NULL)
 	{
+		size--;
 		T* ret = node->getNext()->getContent();
 		Node<T>* temp = node->getNext();
 		node->setNext(node->getNext()->getNext());
@@ -267,6 +275,12 @@ T* LinkedList<T>::removeNode(T* n)
 	return NULL;
 
 
+}
+
+template<class T>
+int LinkedList<T>::getSize()
+{
+	return size;
 }
 
 template<class T>

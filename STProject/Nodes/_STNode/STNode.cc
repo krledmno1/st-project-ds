@@ -40,4 +40,8 @@ cGate* STNode::getFreeInputGate(){
 	return NULL;
 }
 
+double STNode::ping(STNode* target)
+{
+	return conditionTable->getDelay(this,target);
+}
 

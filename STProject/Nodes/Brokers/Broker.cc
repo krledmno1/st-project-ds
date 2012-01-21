@@ -83,22 +83,62 @@ void Broker::sleep() {
 }
 
 void Broker::handleNameServerMessage(NSMessage* nsm) {
-	Broker* requestedNode = dynamic_cast<Broker*>(nsm->getRequestedNode());
-	if (requestedNode != NULL && requestedNode != this) {
-		cGate* myGate = getFreeOutputGate();
-		cGate* hisGate = requestedNode->getFreeInputGate();
-		if (myGate == NULL || hisGate == NULL) { //retry later
+	LinkedList<STNode>* requestedNodes = dynamic_cast<LinkedList<STNode>*>(nsm->getRequestedNodes());
+	if (!requestedNodes->isEmpty())
+	{
+		Node<STNode>* requestedNode = requestedNodes->start;
+		Broker* best = NULL;
+		double bestDelay = simulation.getSystemModule()->getSubmodule("nameServer",0)->par("maxDelay");
+		bestDelay++;
+		for(int i=0;i<requestedNodes->getSize();i++)
+		{
+			Broker* candidate = dynamic_cast<Broker*>(requestedNode->getContent());
+			double candidateDelay = this->ping(candidate);
+			if(candidate!=this && candidateDelay<bestDelay)
+			{
+				best = candidate;
+				bestDelay = candidateDelay;
+			}
+			requestedNode = requestedNode->getNext();
+		}
+
+		if(best!=NULL)		//if there exists best one
+		{
+
+			//picked out the best one
+			cGate* myGate = getFreeOutputGate();
+			cGate* hisGate = best->getFreeInputGate();
+			if (myGate == NULL || hisGate == NULL)
+			{
+				//retry later
+				//why is this possible?
+				scheduleAt(par("WakeUpDelay"), wakeUpDelayMsg);
+				cancelAndDelete(nsm);
+				return;
+			}
+			myGate->connectTo(hisGate);
+			neighboursMap.addMapping(best, myGate);
+			//TODO handle the case in which you have no free InputGate
+			send(new ConnectionRequestMessage(this), myGate);
+			cancelAndDelete(nsm);
+			return;
+		}
+		else
+		{
+			//this means that there is only one broker in the list
+			//and it's this one (which is impossible, but hey... better safe that sorry)
+			//retry later
 			scheduleAt(par("WakeUpDelay"), wakeUpDelayMsg);
 			cancelAndDelete(nsm);
 			return;
 		}
-		myGate->connectTo(hisGate);
-		neighboursMap.addMapping(requestedNode, myGate);
-		//TODO handle the case in which you have no free InputGate
-		send(new ConnectionRequestMessage(this), myGate);
+	}
+	else
+	{
+		//we assume we're the first Broker registering to the network or only one not sleeping
+		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 		cancelAndDelete(nsm);
-	} //we assume we're the first Broker registering to the network
-	scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+	}
 }
 
 void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
