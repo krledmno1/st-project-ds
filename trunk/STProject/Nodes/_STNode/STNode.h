@@ -40,6 +40,7 @@ protected:
 	cMessage *sleepDelayMsg;
 
 	cGate* getNSGate();
+	double ping(STNode* target);
 
 	static NetworkConditionTable* conditionTable;
 	static const int NR_TOPICS = 4; //�[0;3] and No negative topics!

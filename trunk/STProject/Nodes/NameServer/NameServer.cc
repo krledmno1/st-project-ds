@@ -34,7 +34,8 @@ NameServer::~NameServer() {}
 void NameServer::initialize() {
 	setNSGate(gate("updIn"));
 
-	int bNum = simulation.getSystemModule()->par("nrBrokers");
+		//create condition table
+		int bNum = simulation.getSystemModule()->par("nrBrokers");
 		int cNum = simulation.getSystemModule()->par("nrClients");
 		double min = par("minDelay");
 		double max = par("maxDelay");
@@ -72,80 +73,168 @@ void NameServer::initialize() {
 		}
 
 }
-void NameServer::handleMessage(cMessage* msg) { //NameServer only uses NSMessage*. Using type constants would only clutter the code
+
+//NameServer only uses NSMessage*. Using type constants would only clutter the code
+void NameServer::handleMessage(cMessage* msg)
+{
 	STMessage* stm = dynamic_cast<STMessage*>(msg);
-	if (stm == NULL) {
+	if (stm == NULL)
+	{
 		EV << "NameServer: unrecognized message";
 		return;
 	}
 
-	if (stm->getType() == stm->NAME_SERVER_MSG) {
+	if (stm->getType() == stm->NAME_SERVER_MSG)
+	{
 		NSMessage* ns = dynamic_cast<NSMessage*>(msg);
-		if (dynamic_cast<Broker*>(ns->getRequester()) != NULL) {
+		if (dynamic_cast<Broker*>(ns->getRequester()) != NULL)
+		{
 			handleBrokerRequest(ns);
-		} else if (dynamic_cast<Client*>(ns->getRequester()) != NULL) {
-			handleClientRequest(ns);
 		}
-	} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG) {
-		handleUnregisterRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
-	}
-
-}
-
-void NameServer::handleBrokerRequest(NSMessage* msg) {
-	Broker* b = NULL;
-	if (brokersVector.size() == 0) {
-		b = NULL;
-	} else {
-		if (brokersVector.size() == 1) {
-			b = brokersVector[0];
-		} else { //size > 1, which means we pick one random
-			while (b == NULL) {
-				b = brokersVector[rand() % brokersVector.size()];
+		else
+		{
+			if (dynamic_cast<Client*>(ns->getRequester()) != NULL)
+			{
+				handleClientRequest(ns);
 			}
 		}
 	}
-	msg->setRequestedNode(b);
-	b = dynamic_cast<Broker*>(msg->getRequester());
+	else
+	{
+		if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG)
+		{
+			handleUnregisterRequest(dynamic_cast<DisconnectionRequestMessage*>(msg));
+		}
+	}
+}
+
+
+//now there is also a linked list of brokers in the message there are no active brokers
+//this will be false and message will contain no brokers; recipient has to check for that
+void NameServer::handleBrokerRequest(NSMessage* msg) {
+
+	if (!brokerList.isEmpty())
+	{
+		Node<Broker>* traverse = brokerList.start;
+		while(traverse!=brokerList.end)
+		{
+			msg->addRequestedNode(traverse->getContent());
+			traverse= traverse->getNext();
+		}
+		msg->addRequestedNode(traverse->getContent());
+	}
+	Broker* b = dynamic_cast<Broker*>(msg->getRequester());
 	sendDirect(msg, b->gate("updIn"));
 	registerBroker(b);
+
+	////////////////////////////////////////////////////
+	//OLD CODE with vector
+	/*
+
+	 Broker* b = NULL;
+        if (brokersVector.size() == 0) {
+                b = NULL;
+        } else {
+                if (brokersVector.size() == 1) {
+                        b = brokersVector[0];
+                } else { //size > 1, which means we pick one random
+                        while (b == NULL) {
+                                b = brokersVector[rand() % brokersVector.size()];
+                        }
+                }
+        }
+        msg->setRequestedNode(b);
+        b = dynamic_cast<Broker*>(msg->getRequester());
+        sendDirect(msg, b->gate("updIn"));
+        registerBroker(b);
+
+	 */
+	///////////////////////////////////////////////////////////
+
 }
 
 
 
-
+//same goes with the client...
 void NameServer::handleClientRequest(NSMessage* msg) {
-	Broker* b = NULL;
-	if (brokersVector.size() == 0) {
-		b = NULL;
-	} else {
-		if (brokersVector.size() > 1) { //we pick a random one
-			while (b == NULL) { //because Brokers unregistered just became NULL, the vector did not shrink, (a LinkedList is needed)
-				b = brokersVector[rand() % brokersVector.size()];	//possible infinite loop if all brokers unregister and client tries to register
-			}
-		} else {
-			b = brokersVector[0];
+
+	if (!brokerList.isEmpty())
+	{
+		Node<Broker>* traverse = brokerList.start;
+		while(traverse!=brokerList.end)
+		{
+			msg->addRequestedNode(traverse->getContent());
+			traverse= traverse->getNext();
 		}
+		msg->addRequestedNode(traverse->getContent());
 	}
-	msg->setRequestedNode(b);
+
 	Client* c = dynamic_cast<Client*>(msg->getRequester());
 	sendDirect(msg, c->gate("updIn"));
+
+	////////////////////////////////////////////////////////////
+	//OLD CODE with vector
+	/*
+
+	 Broker* b = NULL;
+        if (brokersVector.size() == 0) {
+                b = NULL;
+        } else {
+                if (brokersVector.size() > 1) { //we pick a random one
+                        while (b == NULL) { //because Brokers unregistered just became NULL, the vector did not shrink, (a LinkedList is needed)
+                                b = brokersVector[rand() % brokersVector.size()];       //possible infinite loop if all brokers unregister and client tries to register
+                        }
+                } else {
+                        b = brokersVector[0];
+                }
+        }
+        msg->setRequestedNode(b);
+        Client* c = dynamic_cast<Client*>(msg->getRequester());
+        sendDirect(msg, c->gate("updIn"));
+
+	 */
+	///////////////////////////////////////////////////////////////
 }
 
+
+//Does nothing if the broker is not in the list or the request is not form a broker
+//otherwise, it removes the broker from the list
 void NameServer::handleUnregisterRequest(DisconnectionRequestMessage* msg) {
 	Broker* b = dynamic_cast<Broker*>(msg->getRequesterNode());
-	if (b == NULL) {
-		return;
-	}
-	//we must remove him from the vector
-	for (unsigned int i = 0; i < brokersVector.size(); i++) {
-		if (brokersVector[i] == b) {
-			brokersVector[i] = NULL;
+	if (b != NULL) {
+
+		//we must remove him from the vector
+		if(brokerList.removeNode(b)==NULL)
+		{
+			EV << "NameServer: I didn't find the broker that I had to unregister!!!";
+		}
+		else
+		{
 			cancelAndDelete(msg);
-			return;
 		}
 	}
-	EV << "NameServer: I didnt find the broker that I had to unregister!!!";
+
+
+	////////////////////////////////////////////////////////////
+	//OLD CODE with vector
+	/*
+
+	 Broker* b = dynamic_cast<Broker*>(msg->getRequesterNode());
+        if (b == NULL) {
+                return;
+        }
+        //we must remove him from the vector
+        for (unsigned int i = 0; i < brokersVector.size(); i++) {
+                if (brokersVector[i] == b) {
+                        brokersVector[i] = NULL;
+                        cancelAndDelete(msg);
+                        return;
+                }
+        }
+        EV << "NameServer: I didnt find the broker that I had to unregister!!!";
+
+	 */
+	////////////////////////////////////////////////////////////////
 }
 
 cGate* NameServer::getFreeInputGate() {
@@ -153,12 +242,33 @@ cGate* NameServer::getFreeInputGate() {
 	return NULL;
 }
 
-void NameServer::registerBroker(Broker* b) { //its more then just appending the broker to the vector. In case vector has null entries corrisponding to removed Brokers, it shouldn't extend the vector but simply insert it in a null position (clearly we should use LinkedLists, not vectors)
-	for (unsigned int i = 0; i < brokersVector.size(); i++) {
-		if (brokersVector[i] == NULL) {
-			brokersVector[i] = b;
-			return;
-		}
-	} //here means we have no NULL entry, no unsubscribed broker...
-	brokersVector.push_back(b);
+
+//its more then just appending the broker to the vector. In case vector has null entries corrisponding to removed Brokers,
+//it shouldn't extend the vector but simply insert it in a null position (clearly we should use LinkedLists, not vectors)
+//EDIT: brokerList is Linked List now
+void NameServer::registerBroker(Broker* b) {
+	if(brokerList.find(b)==NULL)
+	{
+		brokerList.addToBack(b);
+	}
+	else
+	{
+		EV << "NameServer: Broker subscribed under my radar somehow!";
+	}
+
+
+	////////////////////////////////////////////////////////////
+	//OLD CODE with vector
+	/*
+
+	   for (unsigned int i = 0; i < brokersVector.size(); i++) {
+                if (brokersVector[i] == NULL) {
+                        brokersVector[i] = b;
+                        return;
+                }
+        } //here means we have no NULL entry, no unsubscribed broker...
+        brokersVector.push_back(b);
+
+	 */
+	//////////////////////////////////////////////////////////////
 }

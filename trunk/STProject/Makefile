@@ -175,6 +175,7 @@ $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o: Messages/
 $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
@@ -213,13 +214,14 @@ $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Nodes/Clients/Client.h \
 	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Clients/Client.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
@@ -230,6 +232,7 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/AcyclicBroker.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
@@ -241,13 +244,14 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
-	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
@@ -258,8 +262,8 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/NeighbourEntry.cc \
@@ -271,6 +275,7 @@ $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/Nei
 $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
@@ -281,14 +286,15 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Nodes/NameServer/NameServer.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \

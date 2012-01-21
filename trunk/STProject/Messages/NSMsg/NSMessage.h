@@ -18,6 +18,7 @@
 
 #include "STMessage.h"
 #include "STNode.h"
+#include "LinkedList.h"
 
 class NSMessage: public STMessage {
 public:
@@ -28,11 +29,12 @@ public:
 	void setRequesterNode(STNode* r);
 	STNode* getRequester();
 
-	void setRequestedNode(STNode* r);
-	STNode* getRequestedNode();
+	void addRequestedNode(STNode* r);
+
+	LinkedList<STNode>* getRequestedNodes();
 private:
 	STNode* requester;
-	STNode* requested;
+	LinkedList<STNode> requested;
 };
 
 #endif /* NSMESSAGE_H_ */

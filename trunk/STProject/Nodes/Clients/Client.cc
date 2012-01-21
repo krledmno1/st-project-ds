@@ -115,16 +115,86 @@ void Client::publish(){
 	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
 }
 /* This is also the procedure which activates the Node. Wakeup only contacts the NS */
-void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we get from NS when we ask for a broker
-	STNode* stn = nsm->getRequestedNode();
-	Broker* requestedNode = dynamic_cast<Broker*>(stn);
-	if (requestedNode == NULL) { //try later
+void Client::handleNameServerMessage(NSMessage* nsm)
+{
+	//this is the reply we get from NS when we ask for a broker
+	LinkedList<STNode>* requestedNodes = dynamic_cast<LinkedList<STNode>*>(nsm->getRequestedNodes());
+	if (!requestedNodes->isEmpty())
+	{
+		Node<STNode>* requestedNode = requestedNodes->start;
+		Broker* best = NULL;
+		double bestDelay = simulation.getSystemModule()->getSubmodule("nameServer",0)->par("maxDelay");
+		bestDelay++;
+		for(int i=0;i<requestedNodes->getSize();i++)
+		{
+			Broker* candidate = dynamic_cast<Broker*>(requestedNode->getContent());
+			double candidateDelay = this->ping(candidate);
+			if(candidateDelay<bestDelay)
+			{
+				best = candidate;
+				bestDelay = candidateDelay;
+			}
+			requestedNode = requestedNode->getNext();
+		}
+		if(best!=NULL)		//if there exists best one
+		{
+
+				cGate* myGate = gate("out");
+				cGate* hisGate = best->getFreeInputGate();
+				if (myGate == NULL || hisGate == NULL)
+				{
+					//try later
+					scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+					return;
+				}
+				myGate->connectTo(hisGate);
+				send(new ConnectionRequestMessage(this), myGate);
+				cancelAndDelete(nsm);
+				//if I was redirected, I should resubscribe to all my topics
+				for (int i=0;i<NR_TOPICS;i++)
+				{
+					if (subscriptionMonitor->isSubscribed(i))
+					{
+						send(new SubscriptionMessage(this,i), gate("out"));
+					}
+				}
+				//now "decide" for how long it will run
+				scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
+				scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
+				scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
+				scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+				return;
+
+		}
+		else
+		{
+			scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+			return;
+		}
+	}
+	else
+	{
+		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+		return;
+	}
+
+
+	////////////////////////////////////////////////////////////////////
+	//OLD CODE with random broker
+	////////////////////////////////////////////////////////////////////
+
+	/*
+
+	if (requestedNode == NULL)
+	{ //try later
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 		return;
 	}
 	cGate* myGate = gate("out");
 	cGate* hisGate = requestedNode->getFreeInputGate();
-	if (myGate == NULL || hisGate == NULL) { //try later
+	if (myGate == NULL || hisGate == NULL)
+	{
+		//try later
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 		return;
 	}
@@ -132,8 +202,10 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 	send(new ConnectionRequestMessage(this), myGate);
 	cancelAndDelete(nsm);
 	//if I was redirected, I should resubscribe to all my topics
-	for (int i=0;i<NR_TOPICS;i++){
-		if (subscriptionMonitor->isSubscribed(i)){
+	for (int i=0;i<NR_TOPICS;i++)
+	{
+		if (subscriptionMonitor->isSubscribed(i))
+		{
 			send(new SubscriptionMessage(this,i), gate("out"));
 		}
 	}
@@ -142,6 +214,10 @@ void Client::handleNameServerMessage(NSMessage* nsm) { //this is the reply we ge
 	scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
 	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
 	scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+
+	*/
+	////////////////////////////////////////////////////////////////////////
+
 }
 
 void Client::handleBrokerDisconnectionRequest(){ //if a broker wishes to disconnect, it is client's task to find another broker
