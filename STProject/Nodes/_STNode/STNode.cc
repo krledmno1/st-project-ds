@@ -39,3 +39,5 @@ cGate* STNode::getFreeInputGate(){
 	EV << "The abstract function got called. This C++ thing....";
 	return NULL;
 }
+
+

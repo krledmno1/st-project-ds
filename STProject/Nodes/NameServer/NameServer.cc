@@ -20,14 +20,57 @@
 
 Define_Module(NameServer);
 
+NetworkConditionTable* STNode::conditionTable;
+
 //____________Construction
 NameServer::NameServer() {
 	srand(time(0));
+
+
+
 }
 NameServer::~NameServer() {}
 
 void NameServer::initialize() {
 	setNSGate(gate("updIn"));
+
+	int bNum = simulation.getSystemModule()->par("nrBrokers");
+		int cNum = simulation.getSystemModule()->par("nrClients");
+		double min = par("minDelay");
+		double max = par("maxDelay");
+
+		STNode::conditionTable = new NetworkConditionTable();
+
+		for(int i = 0;i<cNum+bNum;i++)
+		{
+			STNode* n1 = NULL;
+			if(i<cNum)
+			{
+				n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("clients",i));
+			}
+			else
+			{
+				n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",i-cNum));
+			}
+			Map<STNode,double>* temp = new Map<STNode,double>();
+			for(int j = 0;j<bNum;j++)
+			{
+				STNode* n2;
+				n2 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",j));
+				if(n1!=n2)
+				{
+					double delay = min+(((double)rand()/(double)RAND_MAX)*(max-min));
+
+					temp->setMapping(n2,delay);
+				}
+				else
+				{
+					temp->setMapping(n2,0.0);
+				}
+			}
+			STNode::conditionTable->getTable()->setMapping(n1,temp);
+		}
+
 }
 void NameServer::handleMessage(cMessage* msg) { //NameServer only uses NSMessage*. Using type constants would only clutter the code
 	STMessage* stm = dynamic_cast<STMessage*>(msg);
@@ -68,6 +111,9 @@ void NameServer::handleBrokerRequest(NSMessage* msg) {
 	registerBroker(b);
 }
 
+
+
+
 void NameServer::handleClientRequest(NSMessage* msg) {
 	Broker* b = NULL;
 	if (brokersVector.size() == 0) {
@@ -75,7 +121,7 @@ void NameServer::handleClientRequest(NSMessage* msg) {
 	} else {
 		if (brokersVector.size() > 1) { //we pick a random one
 			while (b == NULL) { //because Brokers unregistered just became NULL, the vector did not shrink, (a LinkedList is needed)
-				b = brokersVector[rand() % brokersVector.size()];
+				b = brokersVector[rand() % brokersVector.size()];	//possible infinite loop if all brokers unregister and client tries to register
 			}
 		} else {
 			b = brokersVector[0];

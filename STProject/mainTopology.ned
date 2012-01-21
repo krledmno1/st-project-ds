@@ -51,6 +51,8 @@ simple NameServer
 {
     parameters:
         volatile double random = default(uniform(0,1));
+        volatile double minDelay = default(uniform(0,5));
+        volatile double maxDelay = default(uniform(95,100));  
         @display("i=abstract/penguin");
     gates:
         input updIn;
@@ -61,7 +63,6 @@ network STNetwork
     parameters:
         int nrClients = default(11);
         int nrBrokers = default(7);
-
         @display("bgb=914,370");
     submodules:
         clients[nrClients]: Client;
