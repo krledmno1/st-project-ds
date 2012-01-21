@@ -116,6 +116,11 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 				cancelAndDelete(nsm);
 				return;
 			}
+
+			//cDelayChannel* cha = new cDelayChannel();
+			//cha->setDelay(bestDelay);
+			//channels.addToBack(cha);
+
 			myGate->connectTo(hisGate);
 			neighboursMap.addMapping(best, myGate);
 			//TODO handle the case in which you have no free InputGate
@@ -146,6 +151,11 @@ void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 	//TODO also, it should be handled the case in which the broker is out of Free Gates, in which case he should return an error Message (not available, something like this)
 	STNode* stn = crm->getRequesterNode();
 	cGate* outGate = getFreeOutputGate();
+
+	//cDelayChannel* cha = new cDelayChannel();
+	//cha->setDelay(this->ping(stn));
+	//channels.addToBack(cha);
+
 	outGate->connectTo(stn->getFreeInputGate());
 
 	neighboursMap.addMapping(stn, outGate);

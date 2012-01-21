@@ -62,6 +62,7 @@ simple NameServer
 
 network STNetwork
 {
+    
     parameters:
         int nrClients = default(11);
         int nrBrokers = default(7);

@@ -18,6 +18,9 @@
 
 #include <csimplemodule.h>
 #include <NetworkConditionTable.h>
+#include <LinkedList.h>
+#include <cdelaychannel.h>
+#include <sstream>
 /*
  * This is the superclass of all the nodes of our project.
  * Mainly it has been created such that it hardcodes the address of the Naming Service (through a static pointer).
@@ -42,9 +45,14 @@ protected:
 	cGate* getNSGate();
 	double ping(STNode* target);
 
+	LinkedList<cDelayChannel> channels;
+
 	static NetworkConditionTable* conditionTable;
 	static const int NR_TOPICS = 4; //�[0;3] and No negative topics!
 };
+
+
+
 
 
 #endif /* STNODE_H_ */
