@@ -147,6 +147,12 @@ void Client::handleNameServerMessage(NSMessage* nsm)
 					scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 					return;
 				}
+
+				//cDelayChannel* cha = new cDelayChannel();
+				//cha->setDelay(bestDelay);
+				//channels.addToBack(cha);
+
+
 				myGate->connectTo(hisGate);
 				send(new ConnectionRequestMessage(this), myGate);
 				cancelAndDelete(nsm);
