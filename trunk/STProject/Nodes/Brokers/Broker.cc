@@ -124,6 +124,7 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 			neighboursMap.addMapping(best, myGate);
 			//TODO handle the case in which you have no free InputGate
 			send(new ConnectionRequestMessage(this), myGate);
+			scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 			cancelAndDelete(nsm);
 			return;
 		}
