@@ -64,7 +64,7 @@ network STNetwork
 {
     
     parameters:
-        int nrClients = default(11);
+        int nrClients = default(0);
         int nrBrokers = default(7);
         @display("bgb=914,370");
     submodules:
