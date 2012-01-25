@@ -19,6 +19,7 @@
 #include "STNode.h"
 #include "NeighbourEntry.h"
 #include <vector>
+#include "LinkedList.h"
 
 /*
  * Obs: The mapping being a vector[], i cannot remove entries. I instead nullify the entries that have to be removed. Thus watchout for NULL bombs...
@@ -36,15 +37,15 @@ public:
 //__Subscriptions
 	void addSubscription(STNode* stn, int topic);
 	void removeSubscription(STNode* stn, int topic);
-	std::vector<NeighbourEntry*> getSubscribers(int topic);
+	LinkedList<NeighbourEntry>* getSubscribers(int topic);
 	bool hasClientSubscribers(int topic);
 	bool isSubscribed(STNode* stn, int topic);
 	std::vector<int> getSubscriptions(); //returns all the topics to which this Broker is subscribed (by his clients, or neighbouring brokers)
 
 //__General purpose tasks
 	bool hasBrokers(); //it means, it has a broker, regardless of clients
-	std::vector<NeighbourEntry*> getNeighboursVector();
-	std::vector<NeighbourEntry*> getBrokersVector();
+	LinkedList<NeighbourEntry>* getNeighboursList();
+	LinkedList<NeighbourEntry>* getBrokersList();
 	std::vector<int> getSubscriptions(STNode* stnode);
 private:
 	std::vector<NeighbourEntry*> neighboursVector; /*Note, the vector MAY HAVE NULL ENTRIES */
