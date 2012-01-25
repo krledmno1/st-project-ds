@@ -183,46 +183,6 @@ void Client::handleNameServerMessage(NSMessage* nsm)
 		return;
 	}
 
-
-	////////////////////////////////////////////////////////////////////
-	//OLD CODE with random broker
-	////////////////////////////////////////////////////////////////////
-
-	/*
-
-	if (requestedNode == NULL)
-	{ //try later
-		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
-		return;
-	}
-	cGate* myGate = gate("out");
-	cGate* hisGate = requestedNode->getFreeInputGate();
-	if (myGate == NULL || hisGate == NULL)
-	{
-		//try later
-		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
-		return;
-	}
-	myGate->connectTo(hisGate);
-	send(new ConnectionRequestMessage(this), myGate);
-	cancelAndDelete(nsm);
-	//if I was redirected, I should resubscribe to all my topics
-	for (int i=0;i<NR_TOPICS;i++)
-	{
-		if (subscriptionMonitor->isSubscribed(i))
-		{
-			send(new SubscriptionMessage(this,i), gate("out"));
-		}
-	}
-	//now "decide" for how long it will run
-	scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
-	scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
-	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
-	scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
-
-	*/
-	////////////////////////////////////////////////////////////////////////
-
 }
 
 void Client::handleBrokerDisconnectionRequest(){ //if a broker wishes to disconnect, it is client's task to find another broker

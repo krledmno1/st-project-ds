@@ -48,16 +48,6 @@ void AcyclicBroker::sleep(){	//TODO what if in the same time 2 connected brokers
 	//step2: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
 	sendDirect(new DisconnectionRequestMessage(this), getNSGate());
 	//step3: send disconnection requests to all neighbors
-	/*std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
-	for (unsigned int i = 0; i < neighbours.size(); i++) {
-		if (neighbours[i] != NULL) {
-			send(new DisconnectionRequestMessage(this), neighbours[i]->getOutGate());
-			neighbours[i]->getOutGate()->disconnect();
-			neighboursMap.removeMapping(neighbours[i]->getNeighbour()); //this entry will become null
-		}
-	}*/
-
-	//////////////
 	LinkedList<NeighbourEntry>* nList = neighboursMap.getNeighboursList();
 	for (NeighbourEntry* ne = nList->removeFromFront();ne!=NULL;ne = nList->removeFromFront()){
 		send(new DisconnectionRequestMessage(this), ne->getOutGate());
@@ -124,7 +114,6 @@ void AcyclicBroker::handleUnsubscription(UnsubscriptionMessage* um){
 	neighboursMap.removeSubscription(um->getUnsubscriber(),um->getTopic());
 
 	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(um->getTopic());
-	//std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(um->getTopic());
 	if (sList->size<=0 && subscriptionMonitor->isSubscribed(um->getTopic())){ //means we have no subscriber left for that topic, so we must unsubcribe definitely
 		subscriptionMonitor->unsubscribe(um->getTopic());
 		LinkedList<NeighbourEntry>* bList = neighboursMap.getBrokersList();
@@ -138,6 +127,7 @@ void AcyclicBroker::handleUnsubscription(UnsubscriptionMessage* um){
 			send(new UnsubscriptionMessage(this,um->getTopic()),ne->getOutGate());
 		}
 	}
+	delete(sList);
 	cancelAndDelete(um);
 }
 
