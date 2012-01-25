@@ -53,8 +53,8 @@ simple NameServer
 {
     parameters:
         volatile double random = default(uniform(0,1));
-        volatile double minDelay = default(uniform(0,5));
-        volatile double maxDelay = default(uniform(95,100));  
+        volatile double minDelay = default(uniform(0.01 , 0.5));
+        volatile double maxDelay = default(uniform(0.95, 1));  
         @display("i=abstract/penguin");
     gates:
         input updIn;

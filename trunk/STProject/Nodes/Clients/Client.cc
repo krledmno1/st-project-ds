@@ -148,12 +148,11 @@ void Client::handleNameServerMessage(NSMessage* nsm)
 					return;
 				}
 
-				//cDelayChannel* cha = new cDelayChannel();
-				//cha->setDelay(bestDelay);
-				//channels.addToBack(cha);
+				cDelayChannel* cha = cDelayChannel::create("DelayChannel");
+				cha->setDelay(bestDelay);
 
+				myGate->connectTo(hisGate,cha);
 
-				myGate->connectTo(hisGate);
 				send(new ConnectionRequestMessage(this), myGate);
 				cancelAndDelete(nsm);
 				//if I was redirected, I should resubscribe to all my topics

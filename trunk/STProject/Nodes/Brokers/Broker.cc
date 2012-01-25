@@ -117,11 +117,10 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 				return;
 			}
 
-			//cDelayChannel* cha = new cDelayChannel();
-			//cha->setDelay(bestDelay);
-			//channels.addToBack(cha);
+			cDelayChannel* cha = cDelayChannel::create("DelayChannel");
+			cha->setDelay(bestDelay);
 
-			myGate->connectTo(hisGate);
+			myGate->connectTo(hisGate,cha);
 			neighboursMap.addMapping(best, myGate);
 			//TODO handle the case in which you have no free InputGate
 			send(new ConnectionRequestMessage(this), myGate);
@@ -152,11 +151,10 @@ void Broker::handleConnectionRequest(ConnectionRequestMessage* crm) {
 	STNode* stn = crm->getRequesterNode();
 	cGate* outGate = getFreeOutputGate();
 
-	//cDelayChannel* cha = new cDelayChannel();
-	//cha->setDelay(this->ping(stn));
-	//channels.addToBack(cha);
+	cDelayChannel* cha = cDelayChannel::create("DelayChannel");
+	cha->setDelay(this->ping(stn));
 
-	outGate->connectTo(stn->getFreeInputGate());
+	outGate->connectTo(stn->getFreeInputGate(),cha);
 
 	neighboursMap.addMapping(stn, outGate);
 	cancelAndDelete(crm);
