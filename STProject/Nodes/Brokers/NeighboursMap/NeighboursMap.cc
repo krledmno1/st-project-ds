@@ -43,37 +43,27 @@ cGate* NeighboursMap::getOutputGate(STNode* stn) {
 	return NULL;
 }
 
-std::vector<NeighbourEntry*> NeighboursMap::getNeighboursVector() {
-	//TODO instead of posting the neighboursVector (which also from a point of view of SE is wrong, I should return a new clean vector with no NULL entry, as I did with the getBrokersVector()
-	return neighboursVector;
-}
-
-std::vector<NeighbourEntry*> NeighboursMap::getBrokersVector(){
-	//in order to create a swift vector, count the brokers first
-	int brokersCount = 0;
+LinkedList<NeighbourEntry>* NeighboursMap::getNeighboursList(){
+	LinkedList<NeighbourEntry>* list = new LinkedList<NeighbourEntry>;
 	for (unsigned int i=0;i<neighboursVector.size();i++){
 		if (neighboursVector[i]!=NULL){
-			if (dynamic_cast<Broker*>(neighboursVector[i]->getNeighbour())!=NULL){ //means its a Broker, so we count it
-					brokersCount++;
-			}
+			list->addToBack(neighboursVector[i]);
 		}
 	}
-	//create a new vector of the proper size (to avoid resizing, costlier then a linear scan
-	//std::vector<NeighbourEntry*>* brokersVectorPointer = new std::vector<NeighbourEntry*>(brokersCount);
-	std::vector<NeighbourEntry*> brokersVector(brokersCount);
-	//now start putting the pointers to the vectors
-	int vectorIndex = 0;
+	return list;
+}
+
+LinkedList<NeighbourEntry>* NeighboursMap::getBrokersList(){
+	LinkedList<NeighbourEntry>* list = new LinkedList<NeighbourEntry>;
 	for (unsigned int i=0;i<neighboursVector.size();i++){
 		if (neighboursVector[i]!=NULL){
 			Broker* b = dynamic_cast<Broker*>(neighboursVector[i]->getNeighbour());
 			if (b!=NULL){ //we put it
-				//brokersVectorPointer->push_back(neighboursVector[i]);
-				brokersVector[vectorIndex] = neighboursVector[i];
-				vectorIndex++;
+				list->addToBack(neighboursVector[i]);
 			}
 		}
 	}
-	return brokersVector; //now the brokers vector should be totally filled with our pointers
+	return list;
 }
 
 bool NeighboursMap::hasBrokers() { //it means, it has a broker, regardless of clients
@@ -121,16 +111,16 @@ void NeighboursMap::removeSubscription(STNode* stn, int topic){
 		ne->removeSubscription(topic);
 }
 
-std::vector<NeighbourEntry*> NeighboursMap::getSubscribers(int topic){
-	std::vector<NeighbourEntry*> subscribers;
+LinkedList<NeighbourEntry>* NeighboursMap::getSubscribers(int topic){
+	LinkedList<NeighbourEntry>* list = new LinkedList<NeighbourEntry>;
 	for (unsigned int i=0;i<neighboursVector.size();i++){
 		if (neighboursVector[i]!=NULL){
 			if (neighboursVector[i]->isSubscribed(topic)){
-				subscribers.push_back(neighboursVector[i]);
+				list->addToBack(neighboursVector[i]);
 			}
 		}
 	}
-	return subscribers;
+	return list;
 }
 
 bool NeighboursMap::hasClientSubscribers(int topic){
@@ -153,9 +143,11 @@ std::vector<int> NeighboursMap::getSubscriptions(){
 	std::vector<int> subscriptions;
 	//TODO this is totally inefficient, but quick to implement. To optimize, just like the client we should keep a boolean array with all the subscriptions, and return easily the existing subscriptions. The challenge would be to make efficient the unsubscriptions also (instead of bool, use int, and count them?)
 	for (int i=0;i<=maxTopic;i++){
-		if (getSubscribers(i).size()>0){
+		LinkedList<NeighbourEntry>* list = getSubscribers(i);
+		if (list->size>0){
 			subscriptions.push_back(i);
 		}
+		delete(list);
 	}
 	return subscriptions;
 }

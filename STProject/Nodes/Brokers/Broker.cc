@@ -70,14 +70,13 @@ void Broker::sleep() {
 	//step1: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
 	sendDirect(new DisconnectionRequestMessage(this), getNSGate());
 	//step2: send disconnection requests to all neighbors
-	std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
-	for (unsigned int i = 0; i < neighbours.size(); i++) {
-		if (neighbours[i] != NULL) {
-			send(new DisconnectionRequestMessage(this), neighbours[i]->getOutGate());
-			neighbours[i]->getOutGate()->disconnect();
-			neighboursMap.removeMapping(neighbours[i]->getNeighbour()); //this entry will become null
-		}
+	LinkedList<NeighbourEntry>* nList = neighboursMap.getNeighboursList();
+	for (NeighbourEntry* ne = nList->removeFromFront();ne!=NULL;ne = nList->removeFromFront()){
+		send(new DisconnectionRequestMessage(this), ne->getOutGate());
+		ne->getOutGate()->disconnect();
+		neighboursMap.removeMapping(ne->getNeighbour()); //this entry will become null
 	}
+	delete (nList);
 	//step3: schedule a rewake
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }

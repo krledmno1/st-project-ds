@@ -26,36 +26,45 @@ AcyclicBroker::~AcyclicBroker() {}
 void AcyclicBroker::sleep(){	//TODO what if in the same time 2 connected brokers decide to disconnect? Hell will break loose, we need to use a sort of "locking" mechanism in this
 	//step0: decide if I can sleep (if I'm the only broker present, means I cannot sleep) Thus, I check if I have any connected Brokers
 	//OBS: I could instead unregister and bring the whole network to an "unavailable state" but I believe it really doesn't make sense.
-	std::vector<NeighbourEntry*> brokersVector = neighboursMap.getBrokersVector();
-	if (brokersVector.size()<=0) { //it means we cannot sleep, we reschedule the sleep
+	LinkedList<NeighbourEntry>* brokersList = neighboursMap.getBrokersList();
+	if (brokersList->size<=0) { //it means we cannot sleep, we reschedule the sleep
 		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 		EV << "I cannot sleep, I'm alone";
 		return;
 	}
 	//step1: we need to redirect every other Broker, in order NOT to break the chain
 	//TODO Once we implement the "network conditions", this will become much more complicated (we'll try to link the Brokers in such a way as to minimize the latency between them)
-	if (brokersVector.size()>1){ //cause if we're connected with only 1 broker we're not breaking any chain
-		for (unsigned int i=1;i<brokersVector.size();i++){
-			if (brokersVector[i]!=NULL && brokersVector[i-1]!=NULL){
-				send(new ConnectionRequestMessage(brokersVector[i]->getNeighbour()),brokersVector[i-1]->getOutGate());
-				send(new ConnectionRequestMessage(brokersVector[i-1]->getNeighbour()),brokersVector[i]->getOutGate());
-			} else {
-				EV << "AcyclicBroker: brokersVector got NULL entries";
-			}
-
+	if (brokersList->size>1){ //cause if we're connected with only 1 broker we're not breaking any chain
+		NeighbourEntry* prevEntry = brokersList->removeFromFront();
+		NeighbourEntry* entry = brokersList->removeFromFront();
+		while (entry!=NULL){
+			send(new ConnectionRequestMessage(prevEntry->getNeighbour()),entry->getOutGate());
+			send(new ConnectionRequestMessage(entry->getNeighbour()),prevEntry->getOutGate());
+			prevEntry = entry;
+			entry = brokersList->removeFromFront();
 		}
 	}
+	delete(brokersList);
 	//step2: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
 	sendDirect(new DisconnectionRequestMessage(this), getNSGate());
 	//step3: send disconnection requests to all neighbors
-	std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
+	/*std::vector<NeighbourEntry*> neighbours = neighboursMap.getNeighboursVector();
 	for (unsigned int i = 0; i < neighbours.size(); i++) {
 		if (neighbours[i] != NULL) {
 			send(new DisconnectionRequestMessage(this), neighbours[i]->getOutGate());
 			neighbours[i]->getOutGate()->disconnect();
 			neighboursMap.removeMapping(neighbours[i]->getNeighbour()); //this entry will become null
 		}
+	}*/
+
+	//////////////
+	LinkedList<NeighbourEntry>* nList = neighboursMap.getNeighboursList();
+	for (NeighbourEntry* ne = nList->removeFromFront();ne!=NULL;ne = nList->removeFromFront()){
+		send(new DisconnectionRequestMessage(this), ne->getOutGate());
+		ne->getOutGate()->disconnect();
+		neighboursMap.removeMapping(ne->getNeighbour()); //this entry will become null
 	}
+	delete (nList);
 	//step4: schedule a rewake
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }
@@ -65,26 +74,29 @@ void AcyclicBroker::handleDisconnectionRequest(DisconnectionRequestMessage* drm)
 	Broker::handleDisconnectionRequest(drm); //This is the call to super class (Broker) to disconnect the requesting side, and remove entry
 	//now decide if we must unsubscribe to any particular topics (since we have no client subscribed to a given topic, if thats the case)
 	for (unsigned int i=0;i<hisSubscriptions.size();i++){
-		std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(hisSubscriptions[i]);
-		if (subscribers.size()<=0 && subscriptionMonitor->isSubscribed(hisSubscriptions[i])){ //means we have no subscriber left for that topic, so we must unsubcribe definitely
+		LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(hisSubscriptions[i]);
+		if (sList->size<=0 && subscriptionMonitor->isSubscribed(hisSubscriptions[i])){ //means we have no subscriber left for that topic, so we must unsubcribe definitely
 			subscriptionMonitor->unsubscribe(hisSubscriptions[i]);
-			std::vector<NeighbourEntry*> brokers = neighboursMap.getBrokersVector();
-			for (unsigned int i=0; i<brokers.size();i++){
-				send(new UnsubscriptionMessage(this,hisSubscriptions[i]),brokers[i]->getOutGate());
+			LinkedList<NeighbourEntry>* bList = neighboursMap.getBrokersList();
+			for (NeighbourEntry* ne = bList->removeFromFront();ne!=NULL;ne = bList->removeFromFront()){
+				send(new UnsubscriptionMessage(this,hisSubscriptions[i]),ne->getOutGate());
 			}
+			delete(bList);
 		}
+		delete (sList);
 	}
 }
 
 void AcyclicBroker::handlePublish(PublishMessage* pm){
 	STNode* stn = pm->getSender();
 	int topic = pm->getTopic();
-	std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(pm->getTopic());
-	for (unsigned int i=0; i<subscribers.size();i++){
-		if (subscribers[i]->getNeighbour()!=stn){ //we dont send back messages
-			send (new PublishMessage(this,topic),subscribers[i]->getOutGate());
+	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(pm->getTopic());
+	for (NeighbourEntry* ne = sList->removeFromFront();ne!=NULL;ne = sList->removeFromFront()){
+		if (ne->getNeighbour()!=stn){ //we dont send back messages
+			send (new PublishMessage(this,topic),ne->getOutGate());
 		}
 	}
+	delete (sList);
 	cancelAndDelete(pm);
 }
 
@@ -93,13 +105,14 @@ void AcyclicBroker::handleSubscription(SubscriptionMessage* sm){
 	int topic = sm->getTopic();
 	//step1: if I'm not already subscribed to the topic, subscribe to this topic to my neighbouring brokers
 	if (!neighboursMap.isSubscribed(stn, topic)){//otherwise no use to repropagate
-		std::vector<NeighbourEntry*> brokers = neighboursMap.getBrokersVector();
-		for (unsigned int i=0; i<brokers.size();i++){
-			if (brokers[i]->getNeighbour()!=stn){ //we dont want to subscribe to the requester, even if he's a broker
-				send(new SubscriptionMessage(this,topic),brokers[i]->getOutGate());
+		LinkedList<NeighbourEntry>* bList = neighboursMap.getBrokersList();
+		for (NeighbourEntry* ne = bList->removeFromFront();ne!=NULL;ne = bList->removeFromFront()){
+			if (ne->getNeighbour()!=stn){ //we dont want to subscribe to the requester, even if he's a broker
+				send(new SubscriptionMessage(this,topic),ne->getOutGate());
 				subscriptionMonitor->subscribe(topic); //if I send it twice, I will set a boolean value twice to true, not a big deal, it just avoid using a flag to indicate that it sent to at least one broker the request
 			}
 		}
+		delete(bList);
 	}
 	//step 2: finally add the subscription also in our DB
 	neighboursMap.addSubscription(stn,topic);
@@ -110,15 +123,20 @@ void AcyclicBroker::handleUnsubscription(UnsubscriptionMessage* um){
 	//first and foremost, remove the subscriber from our list
 	neighboursMap.removeSubscription(um->getUnsubscriber(),um->getTopic());
 
-	std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(um->getTopic());
-	if (subscribers.size()<=0 && subscriptionMonitor->isSubscribed(um->getTopic())){ //means we have no subscriber left for that topic, so we must unsubcribe definitely
+	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(um->getTopic());
+	//std::vector<NeighbourEntry*> subscribers = neighboursMap.getSubscribers(um->getTopic());
+	if (sList->size<=0 && subscriptionMonitor->isSubscribed(um->getTopic())){ //means we have no subscriber left for that topic, so we must unsubcribe definitely
 		subscriptionMonitor->unsubscribe(um->getTopic());
-		std::vector<NeighbourEntry*> brokers = neighboursMap.getBrokersVector();
-		for (unsigned int i=0; i<brokers.size();i++){
-			send(new UnsubscriptionMessage(this,um->getTopic()),brokers[i]->getOutGate());
+		LinkedList<NeighbourEntry>* bList = neighboursMap.getBrokersList();
+		for (NeighbourEntry* ne = bList->removeFromFront();ne!=NULL;ne = bList->removeFromFront()){
+			send(new UnsubscriptionMessage(this,um->getTopic()),ne->getOutGate());
 		}
-	} else if (subscribers.size()==1 && dynamic_cast<Client*>(subscribers[0]->getNeighbour())==NULL) { //particular case, CHECK THE PAPER (second conditions checks if the one hanging is a broker, and not a client
-		send(new UnsubscriptionMessage(this,um->getTopic()),subscribers[0]->getOutGate());
+		delete(bList);
+	} else if (sList->size==1){ //particular case, CHECK THE PAPER (second conditions checks if the one hanging is a broker, and not a client
+		NeighbourEntry* ne = sList->removeFromFront();
+		if (dynamic_cast<Client*>(ne->getNeighbour())==NULL){
+			send(new UnsubscriptionMessage(this,um->getTopic()),ne->getOutGate());
+		}
 	}
 	cancelAndDelete(um);
 }
