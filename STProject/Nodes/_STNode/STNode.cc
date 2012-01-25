@@ -32,13 +32,6 @@ STNode::STNode() {
 STNode::~STNode() {
 	cancelAndDelete(wakeUpDelayMsg);
 	cancelAndDelete(sleepDelayMsg);
-	cDelayChannel* c=channels.removeFromFront();
-	while(c!=NULL)
-	{
-		delete c;
-		c=channels.removeFromFront();
-	}
-
 }
 
 //_____________Front Panel

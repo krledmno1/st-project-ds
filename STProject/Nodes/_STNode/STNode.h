@@ -45,7 +45,7 @@ protected:
 	cGate* getNSGate();
 	double ping(STNode* target);
 
-	LinkedList<cDelayChannel> channels;
+	//LinkedList<cDelayChannel> channels;
 
 	static NetworkConditionTable* conditionTable;
 	static const int NR_TOPICS = 4; //�[0;3] and No negative topics!
