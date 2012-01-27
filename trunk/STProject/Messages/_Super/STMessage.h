@@ -34,6 +34,7 @@ public:
 	static const int SUBSCRIPTION_MESSAGE = 3;
 	static const int PUBLISH_MESSAGE = 4;
 	static const int UNSUBSCRIPTION_MESSAGE = 5;
+	static const int NEW_BROKER_NOTIFICATION = 6;
 
 protected:
 	int messageType;

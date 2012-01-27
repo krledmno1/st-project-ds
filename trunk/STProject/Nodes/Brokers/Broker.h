@@ -25,6 +25,8 @@
 #include "UnsubscriptionMessage.h"
 #include "PublishMessage.h"
 
+class NewBrokerNotificationMessage;
+
 /*
  * The Broker, in this form, provides the basic facility of handling connections. It has nothing to do with passing messages around (Publish/Subcribe), or maintaining any topology of the network,
  * in fact, once the broker wishes to disconnect, it will break/fragment the entire network. This will be taken care of by further extensions (Acyclic/Cyclic Brokers)
@@ -51,6 +53,7 @@ protected:
 private:
 	void wakeUp();
 	void handleNameServerMessage(NSMessage* nsm);
+	void handleNewBrokerNotification(NewBrokerNotificationMessage* nbnm);
 };
 
 #endif /* BROKER_H_ */

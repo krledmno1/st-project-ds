@@ -22,6 +22,9 @@
 #include "Broker.h"
 #include "cgate.h"
 #include "SubscriptionMonitor.h"
+#include "NewBrokerNotificationMessage.h"
+
+class NewBrokerNotificationMessage;
 
 class Client: public STNode {
 public:
@@ -42,11 +45,14 @@ private:
 	//external message handling
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
 	void handleBrokerDisconnectionRequest(); //if a broker wishes to disconnect, it is client's task to find another broker
+	void handleNewBrokerNotification(NewBrokerNotificationMessage* m);
 
 	cMessage* publishDelayMsg;
 	cMessage* subscribeDelayMsg;
 	cMessage* unsubscribeDelayMsg;
+
 	SubscriptionMonitor* subscriptionMonitor;
+	double currentPing;
 };
 
 #endif /* CLIENT_H_ */

@@ -26,9 +26,11 @@ simple Client
         volatile double SubscriptionPeriod @unit(s) = uniform(5s, 15s);
         volatile double UnSubscriptionPeriod @unit(s) = uniform(10s, 20s);
         volatile double PublishPeriod @unit(s) = uniform(2s, 10s);
+        
+        int nrInputGates = default(2);
     @display("i=device/laptop");
     gates:
-        input in;
+        input in[nrInputGates];
         output out;
         input updIn; //used to communicate with the NS
 }
@@ -66,6 +68,7 @@ network STNetwork
     parameters:
         int nrClients = default(11);
         int nrBrokers = default(7);
+        bool newBrokerNotification = default(true);
         @display("bgb=914,370");
     submodules:
         clients[nrClients]: Client;

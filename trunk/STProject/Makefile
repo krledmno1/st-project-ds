@@ -20,6 +20,7 @@ INCLUDE_PATH = \
     -IMessages/ConnectionRequestMessage \
     -IMessages/DisconnectionRequestMessage \
     -IMessages/NSMsg \
+    -IMessages/NewBrokerNotificationMessage \
     -IMessages/PublishMessage \
     -IMessages/SubscriptionMessage \
     -IMessages/UnsubscriptionMessage \
@@ -52,6 +53,7 @@ OBJS = \
     $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o \
     $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o \
     $O/Messages/NSMsg/NSMessage.o \
+    $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o \
     $O/Messages/PublishMessage/PublishMessage.o \
     $O/Messages/SubscriptionMessage/SubscriptionMessage.o \
     $O/Messages/UnsubscriptionMessage/UnsubscriptionMessage.o \
@@ -145,6 +147,7 @@ clean:
 	-rm -f Messages/ConnectionRequestMessage/*_m.cc Messages/ConnectionRequestMessage/*_m.h
 	-rm -f Messages/DisconnectionRequestMessage/*_m.cc Messages/DisconnectionRequestMessage/*_m.h
 	-rm -f Messages/NSMsg/*_m.cc Messages/NSMsg/*_m.h
+	-rm -f Messages/NewBrokerNotificationMessage/*_m.cc Messages/NewBrokerNotificationMessage/*_m.h
 	-rm -f Messages/PublishMessage/*_m.cc Messages/PublishMessage/*_m.h
 	-rm -f Messages/SubscriptionMessage/*_m.cc Messages/SubscriptionMessage/*_m.h
 	-rm -f Messages/UnsubscriptionMessage/*_m.cc Messages/UnsubscriptionMessage/*_m.h
@@ -165,7 +168,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -188,6 +191,23 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Brokers/Broker.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/_STNode/STNode.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.cc \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
@@ -230,6 +250,7 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
@@ -248,6 +269,7 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
@@ -274,6 +296,7 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
@@ -292,6 +315,7 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
@@ -310,6 +334,7 @@ $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/NSMsg/NSMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \

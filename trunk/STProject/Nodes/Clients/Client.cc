@@ -28,6 +28,7 @@ Client::Client() {
 	publishDelayMsg = new cMessage("Publish");
 	subscribeDelayMsg = new cMessage("Subscribe");
 	unsubscribeDelayMsg = new cMessage("Unsubscribe");
+	currentPing = 0;
 }
 Client::~Client() {
 	cancelAndDelete(publishDelayMsg);
@@ -36,13 +37,19 @@ Client::~Client() {
 }
 
 cGate* Client::getFreeInputGate(){
-	return gate("in");
+	int nr = par("nrInputGates");
+	for (int i = 0; i < nr; i++) {
+		cGate* g = gate("in", i);
+		if (!g->isConnected())
+			return g;
+	}
+	return NULL;
 }
 
 void Client::initialize() {
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }
-void Client::handleMessage(cMessage *msg) {
+void Client::handleMessage(cMessage* msg) {
 	if (msg == wakeUpDelayMsg) {
 		wakeUp();
 	} else if (msg == sleepDelayMsg) {
@@ -60,6 +67,8 @@ void Client::handleMessage(cMessage *msg) {
 		} else if (stm->getType()==stm->DISCONNECTION_REQUEST_MSG){
 			handleBrokerDisconnectionRequest();
 			cancelAndDelete(msg);
+		} else if (stm->getType()==stm->NEW_BROKER_NOTIFICATION){
+			handleNewBrokerNotification(dynamic_cast<NewBrokerNotificationMessage*>(msg));
 		} else {
 			EV << "Client: Unrecognized STMessage type \n";
 			cancelAndDelete(msg);
@@ -150,6 +159,7 @@ void Client::handleNameServerMessage(NSMessage* nsm)
 
 				cDelayChannel* cha = cDelayChannel::create("DelayChannel");
 				cha->setDelay(bestDelay);
+				currentPing = bestDelay;
 
 				myGate->connectTo(hisGate,cha);
 
@@ -193,4 +203,32 @@ void Client::handleBrokerDisconnectionRequest(){ //if a broker wishes to disconn
 	cancelEvent(sleepDelayMsg); //because if it comes before the Reconnection wake up, we end up wanting to disconnect when we are already disconnected
 	gate("out")->disconnect();
 	scheduleAt(simTime() + par("ReconnectDelay"), wakeUpDelayMsg);
+}
+
+void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m){
+	double newPing = ping(m->getJoiningBroker());
+	if (newPing < currentPing){
+		cGate* hisGate = m->getJoiningBroker()->getFreeInputGate();
+		if (hisGate == NULL) { //he's full, we cancel reconnection attempt
+			cancelAndDelete(m);
+			return;
+		}
+		send(new DisconnectionRequestMessage(this), gate("out"));
+		gate("out")->disconnect();
+
+		cDelayChannel* cha = cDelayChannel::create("DelayChannel");
+		cha->setDelay(newPing);
+		currentPing = newPing;
+
+		cGate* myGate = gate("out");
+		myGate->connectTo(hisGate,cha);
+
+		send(new ConnectionRequestMessage(this), myGate);
+		for (int i=0;i<NR_TOPICS;i++) {
+			if (subscriptionMonitor->isSubscribed(i)) {
+				send(new SubscriptionMessage(this,i), gate("out"));
+			}
+		}
+	}
+	cancelAndDelete(m);
 }
