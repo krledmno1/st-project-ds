@@ -46,6 +46,8 @@ void Broker::handleMessage(cMessage *msg) {
 			handleUnsubscription(dynamic_cast<UnsubscriptionMessage*>(msg));
 		} else if (stm->getType() == stm->PUBLISH_MESSAGE) {
 			handlePublish(dynamic_cast<PublishMessage*>(msg));
+		} else if (stm->getType() == stm->NEW_BROKER_NOTIFICATION) {
+			handleNewBrokerNotification(dynamic_cast<NewBrokerNotificationMessage*>(msg));
 		} else {
 			EV << "Broker: Unknown STMessage type \n";
 		}
@@ -110,7 +112,7 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 			if (myGate == NULL || hisGate == NULL)
 			{
 				//retry later
-				//why is this possible?
+				//why is this possible? Because a broker or the connecting part may run out of gates, actually if the latter happens he should try his second best option, and so on
 				scheduleAt(par("WakeUpDelay"), wakeUpDelayMsg);
 				cancelAndDelete(nsm);
 				return;
@@ -123,6 +125,13 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 			neighboursMap.addMapping(best, myGate);
 			//TODO handle the case in which you have no free InputGate
 			send(new ConnectionRequestMessage(this), myGate);
+
+			bool notificationEnabled = simulation.getSystemModule()->par("newBrokerNotification");
+			if (notificationEnabled){
+				EV << "Sending join notification";
+				send(new NewBrokerNotificationMessage(this,this),myGate);
+			}
+
 			scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
 			cancelAndDelete(nsm);
 			return;
@@ -169,6 +178,17 @@ void Broker::handleDisconnectionRequest(DisconnectionRequestMessage* drm) {
 	myOutputGate->disconnect();
 	neighboursMap.removeMapping(drm->getRequesterNode()); //if you remove the mapping, you automatically remove all the subscriptions to him, all we need is now to refresh subscriptions in some way, to see if we need to unsubscribe to any particular topic
 	cancelAndDelete(drm);
+}
+
+void Broker::handleNewBrokerNotification(NewBrokerNotificationMessage* nbnm){
+	LinkedList<NeighbourEntry>* nList = neighboursMap.getNeighboursList();
+	for (NeighbourEntry* ne = nList->removeFromFront();ne!=NULL;ne = nList->removeFromFront()){
+		if (ne->getNeighbour()!=nbnm->getPreviousHop()){ //this is all we need for broadcasting in an acyclic topology
+			send (new NewBrokerNotificationMessage(nbnm->getJoiningBroker(),this),ne->getOutGate());
+		}
+	}
+	delete (nList);
+	cancelAndDelete(nbnm);
 }
 
 cGate* Broker::getFreeInputGate() {
