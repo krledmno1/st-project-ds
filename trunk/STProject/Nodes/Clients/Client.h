@@ -20,6 +20,7 @@
 #include "NSMessage.h"
 #include <omnetpp.h>
 #include "Broker.h"
+#include "VectorClock.h"
 #include "cgate.h"
 #include "SubscriptionMonitor.h"
 #include "NewBrokerNotificationMessage.h"
@@ -37,6 +38,8 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 private:
+	VectorClock *timeStamp;
+	LinkedList<PublishMessage> postponedMessages;
 	void wakeUp();
 	void goSleep();
 	void subscribe();
@@ -46,6 +49,9 @@ private:
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
 	void handleBrokerDisconnectionRequest(); //if a broker wishes to disconnect, it is client's task to find another broker
 	void handleNewBrokerNotification(NewBrokerNotificationMessage* m);
+	void handlePublishMessage(PublishMessage* nsm);
+	bool checkReceiveCondition(PublishMessage* msg);
+	void checkPostponed();
 
 	cMessage* publishDelayMsg;
 	cMessage* subscribeDelayMsg;

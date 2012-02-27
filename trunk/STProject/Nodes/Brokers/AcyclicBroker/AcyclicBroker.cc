@@ -83,7 +83,7 @@ void AcyclicBroker::handlePublish(PublishMessage* pm){
 	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(pm->getTopic());
 	for (NeighbourEntry* ne = sList->removeFromFront();ne!=NULL;ne = sList->removeFromFront()){
 		if (ne->getNeighbour()!=stn){ //we dont send back messages
-			send (new PublishMessage(this,topic),ne->getOutGate());
+			send (new PublishMessage(this,topic,pm->getTimeStamp()),ne->getOutGate());
 		}
 	}
 	delete (sList);

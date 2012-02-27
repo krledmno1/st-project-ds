@@ -48,7 +48,7 @@ protected:
 	//LinkedList<cDelayChannel> channels;
 
 	static NetworkConditionTable* conditionTable;
-	static const int NR_TOPICS = 4; //�[0;3] and No negative topics!
+	static const int NR_TOPICS = 2; //�[0;3] and No negative topics!
 };
 
 

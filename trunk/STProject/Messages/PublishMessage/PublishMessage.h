@@ -16,19 +16,24 @@
 #ifndef PUBLISHMESSAGE_H_
 #define PUBLISHMESSAGE_H_
 
+#include "VectorClock.h"
+
 #include "STMessage.h"
 #include "STNode.h"
 
 class PublishMessage: public STMessage {
 public:
-	PublishMessage(STNode* sender, int topic);
+	PublishMessage(STNode* sender, int topic, VectorClock *ts);
 	virtual ~PublishMessage();
 
 	int getTopic();
 	STNode* getSender();
+    VectorClock *getTimeStamp();
+    void setTimeStamp(VectorClock *timeStamp);
 private:
 	int topic;
 	STNode* sender;
+	VectorClock *timeStamp;
 };
 
 #endif /* PUBLISHMESSAGE_H_ */
