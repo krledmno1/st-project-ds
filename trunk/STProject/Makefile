@@ -60,14 +60,14 @@ OBJS = \
     $O/Messages/_Super/STMessage.o \
     $O/Nodes/Brokers/Broker.o \
     $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o \
-    $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
+    $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Clients/Client.o \
     $O/Nodes/NameServer/NameServer.o \
     $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
     $O/Nodes/_STNode/STNode.o \
-    $O/Utilities/NetworkConditionTable/KeyValue.o \
     $O/Utilities/NetworkConditionTable/Map.o \
+    $O/Utilities/NetworkConditionTable/KeyValue.o \
     $O/Utilities/NetworkConditionTable/NetworkConditionTable.o
 
 # Message files
