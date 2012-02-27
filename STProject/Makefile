@@ -62,7 +62,9 @@ OBJS = \
     $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
     $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
+    $O/Nodes/Clients/Pair.o \
     $O/Nodes/Clients/Client.o \
+    $O/Nodes/Clients/VectorClock.o \
     $O/Nodes/NameServer/NameServer.o \
     $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
     $O/Nodes/_STNode/STNode.o \
@@ -198,6 +200,8 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -215,6 +219,8 @@ $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Message
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -223,6 +229,8 @@ $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Message
 $O/Messages/PublishMessage/PublishMessage.o: Messages/PublishMessage/PublishMessage.cc \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -259,6 +267,8 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -279,6 +289,8 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -305,6 +317,8 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -324,7 +338,24 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Nodes/_STNode/STNode.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Nodes/Clients/Pair.o: Nodes/Clients/Pair.cc \
+	Nodes/Clients/Pair.h \
+	Nodes/_STNode/STNode.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Nodes/Clients/VectorClock.o: Nodes/Clients/VectorClock.cc \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -343,6 +374,8 @@ $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/NameServer/NameServer.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
