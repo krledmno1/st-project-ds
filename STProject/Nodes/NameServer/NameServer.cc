@@ -40,37 +40,8 @@ void NameServer::initialize() {
 		double min = par("minDelay");
 		double max = par("maxDelay");
 
-		STNode::conditionTable = new NetworkConditionTable();
+		STNode::conditionTable = new NetworkConditionTable(cNum,bNum,min,max);
 
-		for(int i = 0;i<cNum+bNum;i++)
-		{
-			STNode* n1 = NULL;
-			if(i<cNum)
-			{
-				n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("clients",i));
-			}
-			else
-			{
-				n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",i-cNum));
-			}
-			Map<STNode,double>* temp = new Map<STNode,double>();
-			for(int j = 0;j<bNum;j++)
-			{
-				STNode* n2;
-				n2 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",j));
-				if(n1!=n2)
-				{
-					double delay = min+(((double)rand()/(double)RAND_MAX)*(max-min));
-
-					temp->setMapping(n2,delay);
-				}
-				else
-				{
-					temp->setMapping(n2,0.0);
-				}
-			}
-			STNode::conditionTable->getTable()->setMapping(n1,temp);
-		}
 
 }
 
@@ -113,19 +84,51 @@ void NameServer::handleMessage(cMessage* msg)
 //this will be false and message will contain no brokers; recipient has to check for that
 void NameServer::handleBrokerRequest(NSMessage* msg) {
 
-	if (!brokerList.isEmpty())
-	{
-		Node<Broker>* traverse = brokerList.start;
-		while(traverse!=brokerList.end)
+
+
+		//this is sending msg to all brokers
+		registerBroker(dynamic_cast<Broker*>(msg->getRequester()));
+		cancelAndDelete(msg);
+
+		for(Node<Broker>* node=brokerList.start;(node!=NULL);node=node->getNext())
 		{
-			msg->addRequestedNode(traverse->getContent());
-			traverse= traverse->getNext();
+			NSMessage* newMsg = new NSMessage();
+			Broker* b = node->getContent();
+
+			if (!brokerList.isEmpty())
+			{
+				Node<Broker>* traverse = brokerList.start;
+				while(traverse!=brokerList.end)
+				{
+					if(traverse->getContent()!=b)
+					{
+						newMsg->addRequestedNode(traverse->getContent());
+
+					}
+					traverse= traverse->getNext();
+				}
+				if(traverse->getContent()!=b)
+				{
+					newMsg->addRequestedNode(traverse->getContent());
+				}
+			}
+
+
+			sendDirect(newMsg, b->gate("updIn"));
+
 		}
-		msg->addRequestedNode(traverse->getContent());
-	}
-	Broker* b = dynamic_cast<Broker*>(msg->getRequester());
-	sendDirect(msg, b->gate("updIn"));
-	registerBroker(b);
+
+
+	//this sends only to one that sent the message
+	/*
+
+	 Broker* b = dynamic_cast<Broker*>(msg->getRequester());
+     sendDirect(msg, b->gate("updIn"));
+     registerBroker(b);
+
+	 */
+
+
 
 	////////////////////////////////////////////////////
 	//OLD CODE with vector
