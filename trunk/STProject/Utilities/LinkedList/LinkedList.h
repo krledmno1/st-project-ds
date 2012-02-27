@@ -1,6 +1,8 @@
 #ifndef LINKEDLISTHPP
 #define LINKEDLISTHPP
 
+#include <stdlib.h>
+
 template<class T>
 class Node
 {
