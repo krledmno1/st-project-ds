@@ -26,9 +26,15 @@ public:
 
 	int getTopic();
 	STNode* getSender();
+	PublishMessage* clone(STNode* newSender);
+	simtime_t getCreationTime();
 private:
+	PublishMessage();
 	int topic;
 	STNode* sender;
+	static int nextID;
+	int id;
+	simtime_t creationTime;
 };
 
 #endif /* PUBLISHMESSAGE_H_ */

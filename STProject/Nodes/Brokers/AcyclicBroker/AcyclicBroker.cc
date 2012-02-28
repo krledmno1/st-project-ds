@@ -79,11 +79,10 @@ void AcyclicBroker::handleDisconnectionRequest(DisconnectionRequestMessage* drm)
 
 void AcyclicBroker::handlePublish(PublishMessage* pm){
 	STNode* stn = pm->getSender();
-	int topic = pm->getTopic();
 	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(pm->getTopic());
 	for (NeighbourEntry* ne = sList->removeFromFront();ne!=NULL;ne = sList->removeFromFront()){
 		if (ne->getNeighbour()!=stn){ //we dont send back messages
-			send (new PublishMessage(this,topic),ne->getOutGate());
+			send (pm->clone(this),ne->getOutGate());
 		}
 	}
 	delete (sList);

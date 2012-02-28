@@ -48,6 +48,7 @@ cGate* Client::getFreeInputGate(){
 
 void Client::initialize() {
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+	delaySignal = registerSignal("PublishDelay");
 }
 void Client::handleMessage(cMessage* msg) {
 	if (msg == wakeUpDelayMsg) {
@@ -69,6 +70,8 @@ void Client::handleMessage(cMessage* msg) {
 			cancelAndDelete(msg);
 		} else if (stm->getType()==stm->NEW_BROKER_NOTIFICATION){
 			handleNewBrokerNotification(dynamic_cast<NewBrokerNotificationMessage*>(msg));
+		} else if (stm->getType()==stm->PUBLISH_MESSAGE){
+			handlePublishMessage(dynamic_cast<PublishMessage*>(msg));
 		} else {
 			EV << "Client: Unrecognized STMessage type \n";
 			cancelAndDelete(msg);
@@ -122,6 +125,15 @@ void Client::publish(){
 	EV << "Publishing " << topicChosen;
 	send(new PublishMessage(this, topicChosen),gate("out"));
 	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
+}
+
+void Client::handlePublishMessage(PublishMessage *pm) {
+	EV << "Received publish message";
+	simtime_t messageTime = pm->getCreationTime();
+	simtime_t now = simTime();
+	EV << now-messageTime;
+	emit(delaySignal,now-messageTime);
+	cancelAndDelete(pm);
 }
 /* This is also the procedure which activates the Node. Wakeup only contacts the NS */
 void Client::handleNameServerMessage(NSMessage* nsm)
@@ -232,3 +244,4 @@ void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m){
 	}
 	cancelAndDelete(m);
 }
+

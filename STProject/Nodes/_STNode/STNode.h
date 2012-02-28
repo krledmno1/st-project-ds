@@ -36,8 +36,6 @@ public:
 	virtual cGate* getFreeInputGate();
 	void setNSGate(cGate *nsGate);
 
-
-
 protected:
 	cMessage *wakeUpDelayMsg;
 	cMessage *sleepDelayMsg;
@@ -45,14 +43,8 @@ protected:
 	cGate* getNSGate();
 	double ping(STNode* target);
 
-	//LinkedList<cDelayChannel> channels;
-
 	static NetworkConditionTable* conditionTable;
-	static const int NR_TOPICS = 4; //�[0;3] and No negative topics!
+	static const int NR_TOPICS = 4; //[0;3] and No negative topics!
 };
-
-
-
-
 
 #endif /* STNODE_H_ */

@@ -15,10 +15,22 @@
 
 #include "PublishMessage.h"
 
+int PublishMessage::nextID = 0;
+
 PublishMessage::PublishMessage(STNode* stn, int t) {
 	messageType = PUBLISH_MESSAGE;
 	topic = t;
 	sender = stn;
+	id = nextID;
+	nextID++;
+	creationTime = simTime();
+}
+simtime_t PublishMessage::getCreationTime() {
+	return creationTime;
+}
+
+PublishMessage::PublishMessage(){
+	messageType = PUBLISH_MESSAGE; //and nothing else
 }
 
 PublishMessage::~PublishMessage() {}
@@ -29,4 +41,13 @@ int PublishMessage::getTopic(){
 
 STNode* PublishMessage::getSender(){
 	return sender;
+}
+
+PublishMessage* PublishMessage::clone(STNode* newSender){
+	PublishMessage* clone = new PublishMessage();
+	clone->sender = newSender;
+	clone->topic = topic;
+	clone->id = id;
+	clone->creationTime = creationTime;
+	return clone;
 }
