@@ -37,17 +37,21 @@ private:
 	KeyValue<A,B>** mappings;
 	int length;
 	int physicalLength;
+
 };
+
+
 
 template<class A, class B>
 Map<A,B>::Map() {
 	this->length=0;
 	this->physicalLength=0;
 	this->mappings = NULL;
-}
 
+}
 template<class A, class B>
 Map<A,B>::~Map() {
+
 	removeAll();
 }
 
@@ -100,103 +104,9 @@ void Map<A,B>::setMapping(A* key, B value)
 		}
 	}
 }
-
-
-template<class A, class B>
-B Map<A,B>::removeMapping(A* key)
-{
-	B ret = NULL;
-	if(length==0)
-	{
-		//do nothing
-	}
-	else
-	{
-		if(length==physicalLength/2)
-		{
-			//remove and shrink
-			bool cond = false;
-			int i = 0;
-			for(int i =0;i<length;i++)
-			{
-				if(mappings[i]->key==key)
-				{
-					cond = true;
-					break;
-				}
-			}
-			if(cond)
-			{
-				//exists
-				ret = mappings[i]->value;
-				delete mappings[i];
-				int newLength = physicalLength/2;
-				KeyValue<A,B>** newMappings = new KeyValue<A,B>*[newLength];
-				int k = 0;
-				for(int j =0;j<length;j++)
-				{
-					if(j!=i)
-						newMappings[k++] = this->mappings[j];
-				}
-				delete [] this->mappings;
-				this->mappings = newMappings;
-				this->physicalLength = newLength;
-				this->length--;
-
-
-			}
-			else
-			{
-				//do nothing
-			}
-
-
-
-		}
-		else
-		{
-			//just remove
-			bool cond = false;
-			int i = 0;
-			for(int i =0;i<length;i++)
-			{
-				if(mappings[i]->key==key)
-				{
-					cond = true;
-					break;
-				}
-			}
-			if(cond)
-			{
-				//exists
-				ret = mappings[i]->value;
-				delete mappings[i];
-				KeyValue<A,B>** newMappings = new KeyValue<A,B>*[physicalLength];
-				int k = 0;
-				for(int j =0;j<length;j++)
-				{
-					if(j!=i)
-						newMappings[k++] = this->mappings[j];
-				}
-				delete [] this->mappings;
-				this->mappings = newMappings;
-				this->length--;
-
-			}
-			else
-			{
-				//do nothing
-			}
-
-		}
-	}
-	return ret;
-}
-
 template<class A, class B>
 B Map<A,B>::removeLastMapping()
 {
-	B ret=NULL;
 		if(length==0)
 		{
 			//do nothing
@@ -207,10 +117,10 @@ B Map<A,B>::removeLastMapping()
 			{
 				//remove and shrink
 				this->length--;
-				ret = mappings[this->length]->value;
+				B ret = mappings[this->length]->value;
 				delete mappings[this->length];
 
-				int newLength = physicalLength/2;
+				double newLength = physicalLength/2;
 				KeyValue<A,B>** newMappings = new KeyValue<A,B>*[newLength];
 
 				for(int i =0;i<length;i++)
@@ -226,13 +136,13 @@ B Map<A,B>::removeLastMapping()
 			{
 				//just remove
 				this->length--;
-				ret = mappings[this->length]->value;
+				B ret = mappings[this->length]->value;
 				delete mappings[this->length];
+
+
 			}
 		}
-		return ret;
 }
-
 template<class A, class B>
 B Map<A,B>::getValue(A* key)
 {

@@ -36,11 +36,6 @@ public:
 	static const int UNSUBSCRIPTION_MESSAGE = 5;
 	static const int NEW_BROKER_NOTIFICATION = 6;
 
-	static const int CONNECTION_MESSAGE = 7;
-	static const int UPDATE_MESSAGE = 8;
-	static const int MWOE_MESSAGE = 9;
-	static const int EXPAND_MESSAGE = 10;
-
 protected:
 	int messageType;
 };

@@ -25,7 +25,6 @@
 #include "UnsubscriptionMessage.h"
 #include "PublishMessage.h"
 
-
 class NewBrokerNotificationMessage;
 
 /*

@@ -18,7 +18,6 @@
 
 #include <Map.h>
 #include <STNode.h>
-#include <LinkedList.h>
 
 class STNode;
 
@@ -27,7 +26,7 @@ class NetworkConditionTable {
 public:
 
 	NetworkConditionTable();
-	NetworkConditionTable(int cNum, int bNum, double min, double max);
+	NetworkConditionTable(int cNum, int bNum);
 	double getDelay(STNode* n1, STNode* n2);
 	virtual ~NetworkConditionTable();
 	Map<STNode,Map<STNode,double>*>* getTable();
@@ -35,10 +34,6 @@ private:
 	int clientNum;
 	int brokerNum;
 	Map<STNode,Map<STNode,double>*> table;
-	LinkedList<double> values;
-
-	void printTable();
-	bool isUnique(double delay);
 
 };
 

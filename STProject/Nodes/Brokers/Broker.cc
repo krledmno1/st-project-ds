@@ -15,7 +15,9 @@
 
 #include "Broker.h"
 #include "Client.h"
-#include "NewBrokerNotificationMessage.h"
+#include "NSMessage.h"
+#include "ConnectionRequestMessage.h"
+#include "DisconnectionRequestMessage.h"
 
 Define_Module(Broker);
 

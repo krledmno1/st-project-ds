@@ -20,7 +20,7 @@ package stproject;
 simple Client
 {
     parameters:
-        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 40s));
+        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 30s));
         volatile double SleepDelay @unit(s) = default(uniform(60s, 120s));
         volatile double ReconnectDelay @unit(s) = default(uniform(2s,6s));
         volatile double SubscriptionPeriod @unit(s) = uniform(5s, 15s);
@@ -38,12 +38,11 @@ simple Client
 //Big Huge Problem: if you use inheritance in NED, the virtual table is not dynamic anymore... a sort of.
 //That means, if I put this as a Broker (as it was) and create a new "simple AcyclicBroker extends Broker" to inherit the properties, and instantiate a number of AcyclicBrokers
 //	I will get in the end Brokers in the STNetwork, NOT AcyclicBrokers as I wished. VERY VERY STRANGE BUG
-simple OptimalBroker {
+simple AcyclicBroker {
     parameters:
         int nrInputGates = default(10);
         int nrOutputGates = default(10);
-        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 30s));
-        volatile double ConverganceDelay @unit(s) = default(uniform(1s, 1s));
+        volatile double WakeUpDelay @unit(s) = default(uniform(0s, 40s));
         volatile double SleepDelay @unit(s) = default(uniform(120s, 240s));
         @display("i=device/router");
     gates:
@@ -67,13 +66,13 @@ network STNetwork
 {
     
     parameters:
-        int nrClients = default(0);
-        int nrBrokers = default(6);
+        int nrClients = default(11);
+        int nrBrokers = default(7);
         bool newBrokerNotification = default(true);
         @display("bgb=914,370");
     submodules:
         clients[nrClients]: Client;
-        borkers[nrBrokers]: OptimalBroker;
+        borkers[nrBrokers]: AcyclicBroker;
         nameServer: NameServer;
     connections allowunconnected:
 }

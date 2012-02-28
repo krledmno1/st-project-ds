@@ -15,17 +15,13 @@
 
 #include "PublishMessage.h"
 
-PublishMessage::PublishMessage(STNode* stn, int t, VectorClock *ts) {
+PublishMessage::PublishMessage(STNode* stn, int t) {
 	messageType = PUBLISH_MESSAGE;
 	topic = t;
 	sender = stn;
-	timeStamp = new VectorClock();
-	timeStamp->setTimeStamp(ts->getTimeStamp());
 }
 
-PublishMessage::~PublishMessage() {
-	delete timeStamp;
-}
+PublishMessage::~PublishMessage() {}
 
 int PublishMessage::getTopic(){
 	return topic;
@@ -34,15 +30,3 @@ int PublishMessage::getTopic(){
 STNode* PublishMessage::getSender(){
 	return sender;
 }
-
-VectorClock* PublishMessage::getTimeStamp()
-{
-    return timeStamp;
-}
-
-void PublishMessage::setTimeStamp(VectorClock *timeStamp)
-{
-    this->timeStamp = timeStamp;
-}
-
-

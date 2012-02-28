@@ -20,7 +20,6 @@
 #include "SubscriptionMessage.h"
 #include "PublishMessage.h"
 #include "UnsubscriptionMessage.h"
-#include <map>
 
 Define_Module(Client);
 
@@ -30,24 +29,14 @@ Client::Client() {
 	subscribeDelayMsg = new cMessage("Subscribe");
 	unsubscribeDelayMsg = new cMessage("Unsubscribe");
 	currentPing = 0;
-
-	timeStamp = new VectorClock();
-	Pair *pair = new Pair(this,0);
-	timeStamp->getTimeStamp()->addToBack(pair);
-
-//	ts.addToBack(pair);
-//	timeStamp.setTimeStamp(ts);
-
-
 }
 Client::~Client() {
-	delete timeStamp;
 	cancelAndDelete(publishDelayMsg);
 	cancelAndDelete(subscribeDelayMsg);
 	cancelAndDelete(unsubscribeDelayMsg);
 }
 
-cGate* Client::getFreeInputGate() {
+cGate* Client::getFreeInputGate(){
 	int nr = par("nrInputGates");
 	for (int i = 0; i < nr; i++) {
 		cGate* g = gate("in", i);
@@ -59,33 +48,27 @@ cGate* Client::getFreeInputGate() {
 
 void Client::initialize() {
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
-
 }
 void Client::handleMessage(cMessage* msg) {
 	if (msg == wakeUpDelayMsg) {
 		wakeUp();
 	} else if (msg == sleepDelayMsg) {
 		goSleep();
-	} else if (msg == subscribeDelayMsg) {
+	} else if (msg == subscribeDelayMsg){
 		subscribe();
-	} else if (msg == unsubscribeDelayMsg) {
+	} else if (msg == unsubscribeDelayMsg){
 		unsubscribe();
-	} else if (msg == publishDelayMsg) {
+	} else if (msg == publishDelayMsg){
 		publish();
 	} else if (dynamic_cast<STMessage*>(msg) != NULL) { //we handle here STMessages
 		STMessage* stm = dynamic_cast<STMessage*>(msg);
-		EV << stm->getType();
-		if (stm->getType() == stm->NAME_SERVER_MSG) {
+		if (stm->getType()==stm->NAME_SERVER_MSG){
 			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
-		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG) {
+		} else if (stm->getType()==stm->DISCONNECTION_REQUEST_MSG){
 			handleBrokerDisconnectionRequest();
 			cancelAndDelete(msg);
-		} else if (stm->getType() == stm->NEW_BROKER_NOTIFICATION) {
-			handleNewBrokerNotification(
-					dynamic_cast<NewBrokerNotificationMessage*>(msg));
-		} else if (stm->getType() == stm->PUBLISH_MESSAGE) {
-			//EV<< "handling publish message";
-			handlePublishMessage(dynamic_cast<PublishMessage*>(msg));
+		} else if (stm->getType()==stm->NEW_BROKER_NOTIFICATION){
+			handleNewBrokerNotification(dynamic_cast<NewBrokerNotificationMessage*>(msg));
 		} else {
 			EV << "Client: Unrecognized STMessage type \n";
 			cancelAndDelete(msg);
@@ -112,120 +95,107 @@ void Client::goSleep() {
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 }
 
-void Client::subscribe() {
+void Client::subscribe(){
 	int topicChosen = subscriptionMonitor->getRandomUnsubscribedTopic();
-	if (topicChosen < 0) {
+	if (topicChosen<0){
 		EV << "I got all subscriptions. Can't subscribe to anything anymore";
 		return;
 	}
 	subscriptionMonitor->subscribe(topicChosen);
 	EV << "Subscribing " << topicChosen;
-	send(new SubscriptionMessage(this, topicChosen), gate("out"));
-	scheduleAt(simTime() + par("SubscriptionPeriod"), subscribeDelayMsg);
+	send(new SubscriptionMessage(this,topicChosen), gate("out"));
+	scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
 }
-void Client::unsubscribe() {
+void Client::unsubscribe(){
 	int topicChosen = subscriptionMonitor->getRandomSubscribedTopic();
-	if (topicChosen < 0) {
+	if (topicChosen<0){
 		EV << "I'm not subscribed to anything yet";
 		return;
 	}
 	subscriptionMonitor->unsubscribe(topicChosen);
 	EV << "Unsubscribing " << topicChosen;
-	send(new UnsubscriptionMessage(this, topicChosen), gate("out"));
-	scheduleAt(simTime() + par("UnSubscriptionPeriod"), unsubscribeDelayMsg);
+	send(new UnsubscriptionMessage(this,topicChosen),gate("out"));
+	scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
 }
-void Client::publish() {
+void Client::publish(){
 	int topicChosen = rand() % (NR_TOPICS);
 	EV << "Publishing " << topicChosen;
-	Pair *p = timeStamp->search(this);
-	if (p == NULL) {
-		EV << "I cannot find myself\n";
-		return;
-	}
-	p->setValue(p->getValue() + 1);
-	send(new PublishMessage(this, topicChosen, timeStamp), gate("out"));
-	scheduleAt(simTime() + par("PublishPeriod"), publishDelayMsg);
+	send(new PublishMessage(this, topicChosen),gate("out"));
+	scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
 }
-
-void Client::handlePublishMessage(PublishMessage* nsm) {
-
-	if (checkReceiveCondition(nsm) == true) {
-		EV << "Received msg \n"; //<< nsm->
-
-		checkPostponed();
-	} else {
-		EV << "postponed \n";
-		postponedMessages.addToBack(nsm);
-	}
-}
-
 /* This is also the procedure which activates the Node. Wakeup only contacts the NS */
-void Client::handleNameServerMessage(NSMessage* nsm) {
+void Client::handleNameServerMessage(NSMessage* nsm)
+{
 	//this is the reply we get from NS when we ask for a broker
-	LinkedList<STNode>* requestedNodes =
-			dynamic_cast<LinkedList<STNode>*>(nsm->getRequestedNodes());
-	if (!requestedNodes->isEmpty()) {
+	LinkedList<STNode>* requestedNodes = dynamic_cast<LinkedList<STNode>*>(nsm->getRequestedNodes());
+	if (!requestedNodes->isEmpty())
+	{
 		Node<STNode>* requestedNode = requestedNodes->start;
 		Broker* best = NULL;
-		double bestDelay = simulation.getSystemModule()->getSubmodule(
-				"nameServer", 0)->par("maxDelay");
+		double bestDelay = simulation.getSystemModule()->getSubmodule("nameServer",0)->par("maxDelay");
 		bestDelay++;
-		for (int i = 0; i < requestedNodes->getSize(); i++) {
-			Broker* candidate =
-					dynamic_cast<Broker*>(requestedNode->getContent());
+		for(int i=0;i<requestedNodes->getSize();i++)
+		{
+			Broker* candidate = dynamic_cast<Broker*>(requestedNode->getContent());
 			double candidateDelay = this->ping(candidate);
-			if (candidateDelay < bestDelay) {
+			if(candidateDelay<bestDelay)
+			{
 				best = candidate;
 				bestDelay = candidateDelay;
 			}
 			requestedNode = requestedNode->getNext();
 		}
-		if (best != NULL) //if there exists best one
+		if(best!=NULL)		//if there exists best one
 		{
 
-			cGate* myGate = gate("out");
-			cGate* hisGate = best->getFreeInputGate();
-			if (myGate == NULL || hisGate == NULL) {
-				//try later
-				scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
-				return;
-			}
-
-			cDelayChannel* cha = cDelayChannel::create("DelayChannel");
-			cha->setDelay(bestDelay);
-			currentPing = bestDelay;
-
-			myGate->connectTo(hisGate, cha);
-
-			send(new ConnectionRequestMessage(this), myGate);
-			cancelAndDelete(nsm);
-			//if I was redirected, I should resubscribe to all my topics
-			for (int i = 0; i < NR_TOPICS; i++) {
-				if (subscriptionMonitor->isSubscribed(i)) {
-					send(new SubscriptionMessage(this, i), gate("out"));
+				cGate* myGate = gate("out");
+				cGate* hisGate = best->getFreeInputGate();
+				if (myGate == NULL || hisGate == NULL)
+				{
+					//try later
+					scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+					return;
 				}
-			}
-			//now "decide" for how long it will run
-			scheduleAt(simTime() + par("SubscriptionPeriod"),
-					subscribeDelayMsg);
-			scheduleAt(simTime() + par("UnSubscriptionPeriod"),
-					unsubscribeDelayMsg);
-			scheduleAt(simTime() + par("PublishPeriod"), publishDelayMsg);
-			scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
-			return;
 
-		} else {
+				cDelayChannel* cha = cDelayChannel::create("DelayChannel");
+				cha->setDelay(bestDelay);
+				currentPing = bestDelay;
+
+				myGate->connectTo(hisGate,cha);
+
+				send(new ConnectionRequestMessage(this), myGate);
+				cancelAndDelete(nsm);
+				//if I was redirected, I should resubscribe to all my topics
+				for (int i=0;i<NR_TOPICS;i++)
+				{
+					if (subscriptionMonitor->isSubscribed(i))
+					{
+						send(new SubscriptionMessage(this,i), gate("out"));
+					}
+				}
+				//now "decide" for how long it will run
+				scheduleAt(simTime() + par("SubscriptionPeriod"),subscribeDelayMsg);
+				scheduleAt(simTime() + par("UnSubscriptionPeriod"),unsubscribeDelayMsg);
+				scheduleAt(simTime() + par("PublishPeriod"),publishDelayMsg);
+				scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+				return;
+
+		}
+		else
+		{
 			scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 			return;
 		}
-	} else {
+	}
+	else
+	{
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 		return;
 	}
 
 }
 
-void Client::handleBrokerDisconnectionRequest() { //if a broker wishes to disconnect, it is client's task to find another broker
+void Client::handleBrokerDisconnectionRequest(){ //if a broker wishes to disconnect, it is client's task to find another broker
 	//this will be a sort of goSleep() method, only that it will try to wake up much sooner
 	cancelEvent(subscribeDelayMsg);
 	cancelEvent(unsubscribeDelayMsg);
@@ -235,9 +205,9 @@ void Client::handleBrokerDisconnectionRequest() { //if a broker wishes to discon
 	scheduleAt(simTime() + par("ReconnectDelay"), wakeUpDelayMsg);
 }
 
-void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m) {
+void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m){
 	double newPing = ping(m->getJoiningBroker());
-	if (newPing < currentPing) {
+	if (newPing < currentPing){
 		cGate* hisGate = m->getJoiningBroker()->getFreeInputGate();
 		if (hisGate == NULL) { //he's full, we cancel reconnection attempt
 			cancelAndDelete(m);
@@ -251,72 +221,14 @@ void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m) {
 		currentPing = newPing;
 
 		cGate* myGate = gate("out");
-		myGate->connectTo(hisGate, cha);
+		myGate->connectTo(hisGate,cha);
 
 		send(new ConnectionRequestMessage(this), myGate);
-		for (int i = 0; i < NR_TOPICS; i++) {
+		for (int i=0;i<NR_TOPICS;i++) {
 			if (subscriptionMonitor->isSubscribed(i)) {
-				send(new SubscriptionMessage(this, i), gate("out"));
+				send(new SubscriptionMessage(this,i), gate("out"));
 			}
 		}
 	}
 	cancelAndDelete(m);
 }
-
-bool Client::checkReceiveCondition(PublishMessage *msg) {
-
-	//first cont
-	Pair *internalTimestamp = timeStamp->search(msg->getSender());
-	Pair *msgTimestamp = msg->getTimeStamp()->search(msg->getSender());
-
-	if (internalTimestamp == NULL) {
-		timeStamp->update(msg->getTimeStamp());
-		checkPostponed();
-		return true;
-	}
-
-	if (msgTimestamp == NULL) {
-		EV << "error publish";
-		return false;
-	}
-
-	if (msgTimestamp->getValue() != internalTimestamp->getValue() + 1)
-		return false;
-
-	Node<Pair> *externalPair = msg->getTimeStamp()->getTimeStamp()->start;
-
-	if (externalPair == NULL) {
-		EV << "ERROR empty message \n";
-		return false;
-	}
-
-	while (externalPair->getNext() != NULL) {
-		if (externalPair->getContent() == internalTimestamp) {
-			externalPair = externalPair->getNext();
-			continue;
-		}
-
-		STNode *otherowner = externalPair->getContent()->getNode(); //not sender
-		Pair *internal = timeStamp->search(otherowner);
-		if (internal->getValue() > externalPair->getContent()->getValue()) {
-
-			return false;
-		}
-		externalPair = externalPair->getNext();
-	}
-
-	return true;
-}
-
-void Client::checkPostponed() {
-
-	Node<PublishMessage> *pm = postponedMessages.start;
-	EV << "check postpones \n";
-	while (pm != NULL) {
-		if (checkReceiveCondition(pm->getContent()))
-			handlePublishMessage(pm->getContent());
-		pm = pm->getNext();
-	}
-
-}
-
