@@ -16,13 +16,13 @@
 #include "STNode.h"
 #include "cmessage.h"
 
-static cGate *nsGate;
-	void STNode::setNSGate(cGate *nsg){
+static cGate* nsGate;
+void STNode::setNSGate(cGate *nsg){
 		nsGate = nsg;
-	}
-	cGate* STNode::getNSGate(){
-		return nsGate;
-	}
+}
+cGate* STNode::getNSGate(){
+	return nsGate;
+}
 
 //_____________Constructing
 STNode::STNode() {
