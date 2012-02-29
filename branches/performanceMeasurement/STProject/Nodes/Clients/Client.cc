@@ -31,16 +31,18 @@ Client::Client() {
 	unsubscribeDelayMsg = new cMessage("Unsubscribe");
 	currentPing = 0;
 
-	timeStamp = new VectorClock();
+	vectors.resize(NR_TOPICS);
+	for (int i=0;i<NR_TOPICS;i++){
+		vectors[i] = new VectorClock();
+		vectors[i]->getTimeStamp()->addToBack(new Pair(this,0));
+	}
+	/*timeStamp = new VectorClock();
 	Pair *pair = new Pair(this,0);
-	timeStamp->getTimeStamp()->addToBack(pair);
-//	ts.addToBack(pair);
-//	timeStamp.setTimeStamp(ts);
-
+	timeStamp->getTimeStamp()->addToBack(pair);*/
 
 }
 Client::~Client() {
-	delete timeStamp;
+	//delete timeStamp;
 	cancelAndDelete(publishDelayMsg);
 	cancelAndDelete(subscribeDelayMsg);
 	cancelAndDelete(unsubscribeDelayMsg);
@@ -73,7 +75,6 @@ void Client::handleMessage(cMessage* msg) {
 		publish();
 	} else if (dynamic_cast<STMessage*>(msg) != NULL) { //we handle here STMessages
 		STMessage* stm = dynamic_cast<STMessage*>(msg);
-		EV << stm->getType();
 		if (stm->getType() == stm->NAME_SERVER_MSG) {
 			handleNameServerMessage(dynamic_cast<NSMessage*>(msg));
 		} else if (stm->getType() == stm->DISCONNECTION_REQUEST_MSG) {
@@ -116,52 +117,34 @@ void Client::goSleep() {
 void Client::subscribe() {
 	int topicChosen = subscriptionMonitor->getRandomUnsubscribedTopic();
 	if (topicChosen < 0) {
-		EV << "I got all subscriptions. Can't subscribe to anything anymore";
+		//EV << "I got all subscriptions. Can't subscribe to anything anymore";
 		return;
 	}
 	subscriptionMonitor->subscribe(topicChosen);
-	EV << "Subscribing " << topicChosen;
+	//EV << " Subscribing To " << topicChosen << " (" << this << ")\n";
 	send(new SubscriptionMessage(this, topicChosen), gate("out"));
 	scheduleAt(simTime() + par("SubscriptionPeriod"), subscribeDelayMsg);
 }
 void Client::unsubscribe() {
 	int topicChosen = subscriptionMonitor->getRandomSubscribedTopic();
 	if (topicChosen < 0) {
-		EV << "I'm not subscribed to anything yet";
+		//EV << "I'm not subscribed to anything yet";
 		return;
 	}
 	subscriptionMonitor->unsubscribe(topicChosen);
-	EV << "Unsubscribing " << topicChosen;
+	//WE MUST ALSO DELETE THE VECTORCLOCK (and create another one for further use)
+	VectorClock* toBeDeleted = vectors[topicChosen];
+	int value = toBeDeleted ->search(this)->getValue();
+	delete(toBeDeleted);
+	VectorClock* newVectorClock = new VectorClock();
+	newVectorClock->timeStamp->addToBack(new Pair(this,value));
+	vectors[topicChosen] = newVectorClock;
+
+	//EV << this << " Unsubscribing to" << topicChosen;
 	send(new UnsubscriptionMessage(this, topicChosen), gate("out"));
 	scheduleAt(simTime() + par("UnSubscriptionPeriod"), unsubscribeDelayMsg);
 }
-void Client::publish() {
-	int topicChosen = rand() % (NR_TOPICS);
-	EV << "Publishing " << topicChosen;
-	Pair *p = timeStamp->search(this);
-	if (p == NULL) {
-		EV << "I cannot find myself\n";
-		return;
-	}
-	p->setValue(p->getValue() + 1);
-	send(new PublishMessage(this, topicChosen, timeStamp), gate("out"));
-	scheduleAt(simTime() + par("PublishPeriod"), publishDelayMsg);
-}
 
-void Client::handlePublishMessage(PublishMessage *pm) {
-	if (checkReceiveCondition(pm) == true) {
-		EV << "Received msg \n"; //<< nsm->
-		simtime_t messageTime = pm->getCreationTime();
-		simtime_t now = simTime();
-		EV << now-messageTime;
-		emit(delaySignal,now-messageTime);
-		checkPostponed();
-	} else {
-		EV << "postponed \n";
-		postponedMessages.addToBack(pm);
-	}
-	cancelAndDelete(pm);
-}
 /* This is also the procedure which activates the Node. Wakeup only contacts the NS */
 void Client::handleNameServerMessage(NSMessage* nsm) {
 	//this is the reply we get from NS when we ask for a broker
@@ -266,60 +249,127 @@ void Client::handleNewBrokerNotification(NewBrokerNotificationMessage* m) {
 	cancelAndDelete(m);
 }
 
-bool Client::checkReceiveCondition(PublishMessage *msg) {
-	//first cont
-	Pair *internalTimestamp = timeStamp->search(msg->getSender());
+void Client::publish() {
+	//int topicChosen = rand() % (NR_TOPICS);
+	//We allow publishing only on subscribed channels
+	int topicChosen = subscriptionMonitor->getRandomSubscribedTopic();
+	if (topicChosen<0){
+		//we're not subscribed anywhere, retry later
+		scheduleAt(simTime() + par("PublishPeriod"), publishDelayMsg);
+		return;
+	}
+	//EV << "Publishing " << topicChosen << "\n";
 
-	Pair *msgTimestamp = msg->getTimeStamp()->search(msg->getSender());
+	VectorClock* timeStamp = vectors[topicChosen];
+	if (timeStamp==NULL){
+		EV << "Client: timestamp not found for a given topic";
+		return;
+	}
+	Pair *p = timeStamp->search(this);
+	if (p == NULL) {
+		EV << "I cannot find myself\n";
+		return;
+	}
+	p->setValue(p->getValue() + 1);
+	timeStamp->printClock();
+	send(new PublishMessage(this, topicChosen, timeStamp), gate("out"));
+	scheduleAt(simTime() + par("PublishPeriod"), publishDelayMsg);
+}
 
-	if (internalTimestamp == NULL) {
-		timeStamp->update(msg->getTimeStamp());
+void Client::handlePublishMessage(PublishMessage *pm) {
+	if (checkReceiveCondition(pm) == true) {
+		exportMessage(pm);
 		checkPostponed();
+	} else {
+		EV << "Client: Postponed message \n";
+		postponedMessages.addToBack(pm);
+	}
+}
+
+void Client::exportMessage(PublishMessage *pm) {
+	//EV << "Received msg \n"; //<< nsm->
+	simtime_t messageTime = pm->getCreationTime();
+	simtime_t now = simTime();
+	//EV << now-messageTime;
+	emit(delaySignal,now-messageTime);
+	cancelAndDelete(pm);
+}
+
+bool Client::checkReceiveCondition(PublishMessage *msg) {
+	VectorClock* timeStamp = vectors[msg->getTopic()];
+	if (timeStamp==NULL || msg->getTimeStamp()==NULL){
+		EV << "timeStamp NULL for a given topic in receiveCondition";
+		return true;
+	}
+	Pair *oldSenderPair = timeStamp->search(msg->getOriginalSender());
+
+	Pair *newSenderPair = msg->getTimeStamp()->search(msg->getOriginalSender());
+
+	if (oldSenderPair != NULL) {EV << "Checking received condition, with sender " << oldSenderPair->getNode() << "\n";}
+	else {EV << this << ": Checking received condition, with new sender " << "\n";}
+	EV << "My timestamp: ";timeStamp->printClock();
+	EV << "His timestamp: " ; msg->getTimeStamp()->printClock();
+
+	if (oldSenderPair == NULL) {
+		timeStamp->update(msg->getTimeStamp());
+		EV << "Outcome: merged "; timeStamp->printClock();
 		return true;
 	}
 
-	if (msgTimestamp == NULL) {
-		EV << "error publish";
+	/*Debug*/if (newSenderPair == NULL) {EV << "Client: Error publish";return false;}
+
+	if (newSenderPair->getValue() != oldSenderPair->getValue() + 1){
+		EV << "CheckReceive: not direct sender followup";
 		return false;
 	}
 
-	if (msgTimestamp->getValue() != internalTimestamp->getValue() + 1)
-		return false;
+	Node<Pair>* externalPairIterator = msg->getTimeStamp()->getTimeStamp()->start;
 
-	Node<Pair> *externalPair = msg->getTimeStamp()->getTimeStamp()->start;
+	/*Debug*/if (externalPairIterator == NULL) {EV << "ERROR empty message \n";return false;}
 
-	if (externalPair == NULL) {
-		EV << "ERROR empty message \n";
-		return false;
-	}
+	while (externalPairIterator != NULL) {
+		/*Sender skip*/if (externalPairIterator->getContent()->getNode() == oldSenderPair->getNode()) {externalPairIterator = externalPairIterator->getNext(); continue; }
 
-	while (externalPair->getNext() != NULL) {
-		if (externalPair->getContent() == internalTimestamp) {
-			externalPair = externalPair->getNext();
-			continue;
+		/*debug*/if (externalPairIterator->getContent() == NULL){EV << "Client: Entry with null content\n"; continue;}
+		STNode *node = externalPairIterator->getContent()->getNode(); //not sender
+		Pair *nodeMatch = timeStamp->search(node);
+		if (nodeMatch == NULL){
+			EV << "Client: NEW NODE DETECTED, ACCEPTING THE MESSAGE"; //yet we dont merge it
+			return true;
 		}
-
-		STNode *otherowner = externalPair->getContent()->getNode(); //not sender
-		Pair *internal = timeStamp->search(otherowner);
-		if (internal->getValue() > externalPair->getContent()->getValue()) {
-
+		if (nodeMatch->getValue() < externalPairIterator->getContent()->getValue()) {
+			EV << "In iteration condition broke\n";
 			return false;
 		}
-		externalPair = externalPair->getNext();
+		externalPairIterator = externalPairIterator->getNext();
 	}
-
+	//we merge it
+	timeStamp->update(msg->getTimeStamp());
+	EV << "Outcome: true: "; timeStamp->printClock();
 	return true;
 }
 
 void Client::checkPostponed() {
-
-	Node<PublishMessage> *pm = postponedMessages.start;
-	EV << "check postpones \n";
-	while (pm != NULL) {
-		if (checkReceiveCondition(pm->getContent()))
-			handlePublishMessage(pm->getContent());
-		pm = pm->getNext();
+	Node<PublishMessage> *pmIterator = postponedMessages.start;
+	LinkedList<PublishMessage> exportedMessages;
+	while (pmIterator != NULL) {
+		if (checkReceiveCondition(pmIterator->getContent())){
+			exportedMessages.addToBack(pmIterator->getContent());
+		}
+		pmIterator = pmIterator->getNext();
 	}
-
+	int counter = 0;
+	Node<PublishMessage>* exportedMessagesIterator = exportedMessages.start;
+	while (exportedMessagesIterator!=NULL){
+		counter++;
+		PublishMessage* pm = exportedMessagesIterator->getContent();
+		postponedMessages.removeNode(pm);
+		exportedMessagesIterator = exportedMessagesIterator->getNext();
+		exportMessage(pm);
+	}
+	if (counter>0){
+		EV << "***********UNLOCKED " << counter << " messages!!";
+		checkPostponed();
+	}
 }
 

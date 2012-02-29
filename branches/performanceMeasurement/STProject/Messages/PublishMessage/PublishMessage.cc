@@ -20,16 +20,32 @@ PublishMessage::PublishMessage(STNode* stn, int t, VectorClock *ts) {
 	messageType = PUBLISH_MESSAGE;
 	topic = t;
 	sender = stn;
+	originalSender = stn;
 	timeStamp = new VectorClock();
-	timeStamp->setTimeStamp(ts->getTimeStamp());
+	//we import the timestamp creating pair by pair
+	Node<Pair>* pairIterator = ts->getTimeStamp()->start;
+	while (pairIterator!=NULL){
+		if (pairIterator->getContent()!=NULL){
+			timeStamp->timeStamp->addToBack(new Pair(pairIterator->getContent()->getNode(),pairIterator->getContent()->getValue()));
+		} else {
+			EV << "PublishMessage NULL";
+		}
+		pairIterator = pairIterator->getNext();
+	}
+	//timeStamp->setTimeStamp(ts->getTimeStamp());
 	creationTime = simTime();
 }
 simtime_t PublishMessage::getCreationTime() {
 	return creationTime;
 }
 
+STNode *PublishMessage::getOriginalSender() {
+	return originalSender;
+}
+
 PublishMessage::PublishMessage(){
 	messageType = PUBLISH_MESSAGE; //and nothing else
+	timeStamp = new VectorClock();
 }
 PublishMessage::~PublishMessage() {
 	delete timeStamp;
@@ -49,16 +65,23 @@ PublishMessage* PublishMessage::clone(STNode* newSender){
 	clone->topic = topic;
 	clone->id = id;
 	clone->creationTime = creationTime;
-	clone->timeStamp = timeStamp;
+	clone->originalSender = originalSender;
+	Node<Pair>* pairIterator = timeStamp->getTimeStamp()->start;
+	while (pairIterator!=NULL){
+		if (pairIterator->getContent()!=NULL){
+			clone->timeStamp->timeStamp->addToBack(pairIterator->getContent());
+		} else {
+			EV << "PublishMessage NULL";
+		}
+		pairIterator = pairIterator->getNext();
+	}
 	return clone;
 }
-VectorClock* PublishMessage::getTimeStamp()
-{
+VectorClock* PublishMessage::getTimeStamp() {
     return timeStamp;
 }
 
-void PublishMessage::setTimeStamp(VectorClock *timeStamp)
-{
+void PublishMessage::setTimeStamp(VectorClock *timeStamp) {
     this->timeStamp = timeStamp;
 }
 

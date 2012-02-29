@@ -66,7 +66,7 @@ void Broker::sleep() {
 	//TODO what if in the same time 2 connected brokers decide to disconnect? Hell will break loose, we need to use a sort of "locking" mechanism in this
 	if (neighboursMap.hasBrokers() == false) { //it means we cannot sleep, we reschedule the sleep
 		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
-		EV << "Cannot sleep, I'm alone";
+		//EV << "Cannot sleep, I'm alone";
 		return;
 	}
 	//step1: unregister from NameServ through a Disconnect message, such that we do not receive any more connection requests from either brokers or clients
@@ -128,7 +128,7 @@ void Broker::handleNameServerMessage(NSMessage* nsm) {
 
 			bool notificationEnabled = simulation.getSystemModule()->par("newBrokerNotification");
 			if (notificationEnabled){
-				EV << "Sending join notification";
+				//EV << "Sending join notification";
 				send(new NewBrokerNotificationMessage(this,this),myGate);
 			}
 
