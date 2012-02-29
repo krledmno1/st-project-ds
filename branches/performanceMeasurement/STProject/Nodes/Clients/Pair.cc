@@ -13,33 +13,38 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef PUBLISHMESSAGE_H_
-#define PUBLISHMESSAGE_H_
+#include "Pair.h"
 
-#include "VectorClock.h"
+Pair::Pair(STNode* n, int v) {
+	node = n;
+	value = v;
+	// TODO Auto-generated constructor stub
 
-#include "STMessage.h"
-#include "STNode.h"
+}
 
-class PublishMessage: public STMessage {
-public:
-	PublishMessage(STNode* sender, int topic, VectorClock *ts);
-	virtual ~PublishMessage();
+Pair::~Pair() {
+	// TODO Auto-generated destructor stub
+}
 
-	int getTopic();
-	STNode* getSender();
-    VectorClock* getTimeStamp();
-    void setTimeStamp(VectorClock *timeStamp);
-	PublishMessage* clone(STNode* newSender);
-	simtime_t getCreationTime();
-private:
-	PublishMessage();
-	int topic;
-	STNode* sender;
-	VectorClock *timeStamp;
-	static int nextID;
-	int id;
-	simtime_t creationTime;
-};
+STNode* Pair::getNode() const
+{
+    return node;
+}
 
-#endif /* PUBLISHMESSAGE_H_ */
+int Pair::getValue() const
+{
+    return value;
+}
+
+void Pair::setNode(STNode* node)
+{
+    this->node = node;
+}
+
+void Pair::setValue(int value)
+{
+    this->value = value;
+}
+
+
+

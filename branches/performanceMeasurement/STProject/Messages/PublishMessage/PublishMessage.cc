@@ -16,13 +16,12 @@
 #include "PublishMessage.h"
 
 int PublishMessage::nextID = 0;
-
-PublishMessage::PublishMessage(STNode* stn, int t) {
+PublishMessage::PublishMessage(STNode* stn, int t, VectorClock *ts) {
 	messageType = PUBLISH_MESSAGE;
 	topic = t;
 	sender = stn;
-	id = nextID;
-	nextID++;
+	timeStamp = new VectorClock();
+	timeStamp->setTimeStamp(ts->getTimeStamp());
 	creationTime = simTime();
 }
 simtime_t PublishMessage::getCreationTime() {
@@ -32,8 +31,9 @@ simtime_t PublishMessage::getCreationTime() {
 PublishMessage::PublishMessage(){
 	messageType = PUBLISH_MESSAGE; //and nothing else
 }
-
-PublishMessage::~PublishMessage() {}
+PublishMessage::~PublishMessage() {
+	delete timeStamp;
+}
 
 int PublishMessage::getTopic(){
 	return topic;
@@ -49,5 +49,17 @@ PublishMessage* PublishMessage::clone(STNode* newSender){
 	clone->topic = topic;
 	clone->id = id;
 	clone->creationTime = creationTime;
+	clone->timeStamp = timeStamp;
 	return clone;
 }
+VectorClock* PublishMessage::getTimeStamp()
+{
+    return timeStamp;
+}
+
+void PublishMessage::setTimeStamp(VectorClock *timeStamp)
+{
+    this->timeStamp = timeStamp;
+}
+
+
