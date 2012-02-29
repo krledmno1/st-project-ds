@@ -37,21 +37,17 @@ private:
 	KeyValue<A,B>** mappings;
 	int length;
 	int physicalLength;
-
 };
-
-
 
 template<class A, class B>
 Map<A,B>::Map() {
 	this->length=0;
 	this->physicalLength=0;
 	this->mappings = NULL;
-
 }
+
 template<class A, class B>
 Map<A,B>::~Map() {
-
 	removeAll();
 }
 
@@ -138,11 +134,10 @@ B Map<A,B>::removeLastMapping()
 				this->length--;
 				B ret = mappings[this->length]->value;
 				delete mappings[this->length];
-
-
 			}
 		}
 }
+
 template<class A, class B>
 B Map<A,B>::getValue(A* key)
 {

@@ -12,34 +12,22 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
-
-#ifndef PUBLISHMESSAGE_H_
-#define PUBLISHMESSAGE_H_
-
-#include "VectorClock.h"
-
-#include "STMessage.h"
 #include "STNode.h"
 
-class PublishMessage: public STMessage {
-public:
-	PublishMessage(STNode* sender, int topic, VectorClock *ts);
-	virtual ~PublishMessage();
+#ifndef PAIR_H_
+#define PAIR_H_
 
-	int getTopic();
-	STNode* getSender();
-    VectorClock* getTimeStamp();
-    void setTimeStamp(VectorClock *timeStamp);
-	PublishMessage* clone(STNode* newSender);
-	simtime_t getCreationTime();
+class Pair {
+public:
+	Pair(STNode* node, int value);
+	virtual ~Pair();
+	STNode* getNode() const;
+	int getValue() const;
+	void setNode(STNode* node);
+	void setValue(int value);
 private:
-	PublishMessage();
-	int topic;
-	STNode* sender;
-	VectorClock *timeStamp;
-	static int nextID;
-	int id;
-	simtime_t creationTime;
+	STNode* node;
+	int value;
 };
 
-#endif /* PUBLISHMESSAGE_H_ */
+#endif /* PAIR_H_ */

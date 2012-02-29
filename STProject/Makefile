@@ -35,7 +35,8 @@ INCLUDE_PATH = \
     -INodes/_STNode \
     -IUtilities \
     -IUtilities/LinkedList \
-    -IUtilities/NetworkConditionTable
+    -IUtilities/NetworkConditionTable \
+    -Iresults
 
 # Additional object and library files to link with
 EXTRA_OBJS =
@@ -63,6 +64,8 @@ OBJS = \
     $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
     $O/Nodes/Clients/Client.o \
+    $O/Nodes/Clients/Pair.o \
+    $O/Nodes/Clients/VectorClock.o \
     $O/Nodes/NameServer/NameServer.o \
     $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
     $O/Nodes/_STNode/STNode.o \
@@ -163,12 +166,13 @@ clean:
 	-rm -f Utilities/*_m.cc Utilities/*_m.h
 	-rm -f Utilities/LinkedList/*_m.cc Utilities/LinkedList/*_m.h
 	-rm -f Utilities/NetworkConditionTable/*_m.cc Utilities/NetworkConditionTable/*_m.h
+	-rm -f results/*_m.cc results/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc results/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -198,6 +202,8 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -215,6 +221,8 @@ $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Message
 	Nodes/Brokers/Broker.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -223,6 +231,8 @@ $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Message
 $O/Messages/PublishMessage/PublishMessage.o: Messages/PublishMessage/PublishMessage.cc \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -259,6 +269,8 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -279,6 +291,8 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -305,6 +319,8 @@ $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/Neig
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
@@ -324,7 +340,24 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
+	Nodes/_STNode/STNode.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Nodes/Clients/Pair.o: Nodes/Clients/Pair.cc \
+	Nodes/Clients/Pair.h \
+	Nodes/_STNode/STNode.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Nodes/Clients/VectorClock.o: Nodes/Clients/VectorClock.cc \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/_STNode/STNode.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
@@ -343,6 +376,8 @@ $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Clients/Client.h \
+	Nodes/Clients/Pair.h \
+	Nodes/Clients/VectorClock.h \
 	Nodes/NameServer/NameServer.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
 	Nodes/_STNode/STNode.h \
