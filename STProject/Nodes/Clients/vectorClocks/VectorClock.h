@@ -24,6 +24,8 @@ public:
     LinkedList<Pair>* getTimeStamp();
     void setTimeStamp(LinkedList<Pair> *timeStamp);
     Pair* search(STNode *stnode);
+
+    void printClock();
 };
 
 #endif /* VECTORCLOCK_H_ */

@@ -24,6 +24,7 @@
 #include "cgate.h"
 #include "SubscriptionMonitor.h"
 #include "NewBrokerNotificationMessage.h"
+#include <vector>
 
 class NewBrokerNotificationMessage;
 
@@ -38,7 +39,8 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 private:
-	VectorClock *timeStamp;
+	//VectorClock *timeStamp;
+	std::vector<VectorClock*> vectors;
 	LinkedList<PublishMessage> postponedMessages;
 	void wakeUp();
 	void goSleep();
@@ -61,6 +63,8 @@ private:
 	double currentPing;
 
 	simsignal_t delaySignal;
+
+	void exportMessage(PublishMessage* pm); //this method would bring the message to the upper layer. Its just logged for now
 };
 
 #endif /* CLIENT_H_ */

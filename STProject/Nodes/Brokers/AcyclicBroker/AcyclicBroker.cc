@@ -29,7 +29,7 @@ void AcyclicBroker::sleep(){	//TODO what if in the same time 2 connected brokers
 	LinkedList<NeighbourEntry>* brokersList = neighboursMap.getBrokersList();
 	if (brokersList->size<=0) { //it means we cannot sleep, we reschedule the sleep
 		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
-		EV << "I cannot sleep, I'm alone";
+		//EV << "I cannot sleep, I'm alone";
 		return;
 	}
 	//step1: we need to redirect every other Broker, in order NOT to break the chain

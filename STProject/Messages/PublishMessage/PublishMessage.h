@@ -28,6 +28,7 @@ public:
 
 	int getTopic();
 	STNode* getSender();
+	STNode* getOriginalSender();
     VectorClock* getTimeStamp();
     void setTimeStamp(VectorClock *timeStamp);
 	PublishMessage* clone(STNode* newSender);
@@ -36,6 +37,7 @@ private:
 	PublishMessage();
 	int topic;
 	STNode* sender;
+	STNode* originalSender;
 	VectorClock *timeStamp;
 	static int nextID;
 	int id;
