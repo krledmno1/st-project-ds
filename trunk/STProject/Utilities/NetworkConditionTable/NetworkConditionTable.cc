@@ -46,12 +46,31 @@ NetworkConditionTable::NetworkConditionTable(int cNum, int bNum, double min, dou
 				{
 					delay = min+(((double)rand()/(double)RAND_MAX)*(max-min));
 				}
-				std::cout << delay;
+				std::cout << delay <<endl;
 				temp->setMapping(n2,delay);
 
 			}
 			table.setMapping(n1,temp);
 		}
+
+		//broker->client relation
+		for(int i = 0;i<bNum;i++)
+		{
+			Map<STNode,double>* temp;
+			n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",i));
+			temp = new Map<STNode,double>();
+			for(int j = 0;j<cNum;j++)
+			{
+				n2 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("clients",j));
+				double delay = table.getValue(n2)->getValue(n1);
+				std::cout << delay <<endl;
+
+
+				temp->setMapping(n2,table.getValue(n2)->getValue(n1));
+			}
+			table.setMapping(n1,temp);
+		}
+
 
 		//broker-broker relation
 		for(int i = 0;i<bNum;i++)
@@ -60,7 +79,7 @@ NetworkConditionTable::NetworkConditionTable(int cNum, int bNum, double min, dou
 
 
 			n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",i));
-			temp = new Map<STNode,double>();
+			temp = table.getValue(n1);
 			for(int j = 0;j<bNum;j++)
 			{
 				n2 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",j));
@@ -86,6 +105,8 @@ NetworkConditionTable::NetworkConditionTable(int cNum, int bNum, double min, dou
 					}
 
 				}
+				std::cout << delay <<endl;
+
 				temp->setMapping(n2,delay);
 
 			}
@@ -160,6 +181,19 @@ void NetworkConditionTable::printTable()
 	}
 
 	std::cout << "End of table";
+
+	for(int i = 0;i<brokerNum;i++)
+	{
+		n1 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("borkers",i));
+		for(int j = 0;j<clientNum;j++)
+		{
+			n2 = dynamic_cast<STNode*>(simulation.getSystemModule()->getSubmodule("clients",j));
+			std::cout << "Broker " << i << " --> " << "Client " << j << "   " << table.getValue(n1)->getValue(n2) << "\n";
+
+
+		}
+	}
+
 
 
 }

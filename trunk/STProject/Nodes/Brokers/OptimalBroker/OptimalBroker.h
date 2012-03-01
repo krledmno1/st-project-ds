@@ -22,7 +22,9 @@
 #include "ExpandMessage.h"
 #include "UpdateMessage.h"
 #include "Map.h"
-
+#include "GenericQueue.h"
+#include "JoinMessage.h"
+#include "Client.h"
 
 class OptimalBroker: public AcyclicBroker {
 public:
@@ -34,19 +36,26 @@ private:
 	long id;
 	long componentId;
 	bool converged;
+	long currentConvergence;
 	LinkedList<long> members;
 	LinkedList<Broker> availableBrokers;
 	cGate* leaderHop;
 	Map<Broker,ConnectMessage*> sentConnects;
 	Map<Broker,ConnectMessage*> receivedConnects;
 	LinkedList<MWOEMessage> receivedMWOEs;
+	GenericQueue<JoinMessage> awaitingNSMsgs;
+	bool initial;
+
+	GenericQueue<SubscriptionMessage> bufferedSubs;
+
+
 
 	void wakeUp();
+	void sleep();
 protected:
 	virtual void handleMessage(cMessage* msg);
-
-	void handleNameServerMessage(NSMessage* nsm);
-
+	virtual void handleNameServerMessage(NSMessage* nsm);
+	virtual void handleSubscription(SubscriptionMessage* sm);
 
 
 	//GHS algorithm
@@ -56,6 +65,9 @@ protected:
 	void handleUpdateMessage(UpdateMessage* msg);
 	void handleMWOEMessage(MWOEMessage* msg);
 	void handleExpandMessage(ExpandMessage* msg);
+	void handleJoinMessage(JoinMessage* msg);
+
+
 
 	void sendConnection(Broker* broker);
 	void findAndSendMWOE();
@@ -68,6 +80,10 @@ protected:
 	bool allMWOEReceived();
 	bool isConverged();
 	double finishTime();
+	void memberUnion(LinkedList<long>* newMembers);
+	void memberCopy(LinkedList<long>* newMembers);
+	ConnectMessage* getReceivedConnectsForCurrentConvergence(Broker* broker, long convergence);
+
 };
 
 #endif /* OPTIMALBROKER_H_ */

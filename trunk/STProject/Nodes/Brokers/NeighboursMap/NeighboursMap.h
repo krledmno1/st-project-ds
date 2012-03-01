@@ -47,6 +47,7 @@ public:
 	LinkedList<NeighbourEntry>* getNeighboursList();
 	LinkedList<NeighbourEntry>* getBrokersList();
 	std::vector<int> getSubscriptions(STNode* stnode);
+	bool hasNode(STNode* n);
 private:
 	std::vector<NeighbourEntry*> neighboursVector; /*Note, the vector MAY HAVE NULL ENTRIES */
 	NeighbourEntry* getEntry(STNode* stn);

@@ -40,6 +40,8 @@ public:
 	static const int UPDATE_MESSAGE = 8;
 	static const int MWOE_MESSAGE = 9;
 	static const int EXPAND_MESSAGE = 10;
+	static const int JOIN_MESSAGE = 11;
+	static const int LEAVE_MESSAGE = 12;
 
 protected:
 	int messageType;

@@ -29,9 +29,15 @@ public:
 	virtual ~Map();
 	void setMapping(A* key, B value);
 	B removeMapping(A* key);
+	B removeMapping(int index);
 	B getValue(A* key);
+	B getValue(int index);
+	int getSize();
+	int getIndex(A* key);
+	int getIndex(A* key, int i);
 	B removeLastMapping();
 	void removeAll();
+	void print();
 
 private:
 	KeyValue<A,B>** mappings;
@@ -49,6 +55,12 @@ Map<A,B>::Map() {
 template<class A, class B>
 Map<A,B>::~Map() {
 	removeAll();
+}
+
+template<class A, class B>
+int Map<A,B>::getSize()
+{
+	return length;
 }
 
 template<class A, class B>
@@ -117,7 +129,7 @@ B Map<A,B>::removeMapping(A* key)
 			//remove and shrink
 			bool cond = false;
 			int i = 0;
-			for(int i =0;i<length;i++)
+			for(i =0;i<length;i++)
 			{
 				if(mappings[i]->key==key)
 				{
@@ -158,7 +170,7 @@ B Map<A,B>::removeMapping(A* key)
 			//just remove
 			bool cond = false;
 			int i = 0;
-			for(int i =0;i<length;i++)
+			for(i =0;i<length;i++)
 			{
 				if(mappings[i]->key==key)
 				{
@@ -231,6 +243,69 @@ B Map<A,B>::removeLastMapping()
 			}
 		}
 		return ret;
+}
+
+
+template<class A, class B>
+B Map<A,B>::removeMapping(int index)
+{
+	if(index<length)
+	{
+		removeMapping(mappings[index]->key);
+	}
+	return NULL;
+}
+
+template<class A, class B>
+void Map<A,B>::print()
+{
+	for(int i = 0;i<length;i++)
+	{
+		std::cout << "Mapping "<< i+1 << std::endl;
+		mappings[i]->print();
+	}
+}
+
+
+
+template<class A, class B>
+B Map<A,B>::getValue(int index)
+{
+	if(index<length)
+	{
+		return mappings[index]->value;
+	}
+	return NULL;
+}
+
+template<class A, class B>
+int Map<A,B>::getIndex(A* key)
+{
+	for(int i =0;i<length;i++)
+	{
+		if(mappings[i]->key==key)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+template<class A, class B>
+int Map<A,B>::getIndex(A* key, int i)
+{
+	if(i<length)
+	{
+		for(int j=i;j<length;j++)
+		{
+			if(mappings[j]->key==key)
+			{
+				return j;
+			}
+		}
+	}
+	return -1;
 }
 
 template<class A, class B>

@@ -20,6 +20,7 @@ Define_Module(OptimalBroker);
 OptimalBroker::OptimalBroker() {
 	// TODO Auto-generated constructor stub
 converged = true;
+initial = true;
 
 }
 void OptimalBroker::wakeUp() {
@@ -52,6 +53,8 @@ void OptimalBroker::handleMessage(cMessage* msg)
 				handleUnsubscription(dynamic_cast<UnsubscriptionMessage*>(msg));
 			} else if (stm->getType() == stm->PUBLISH_MESSAGE) {
 				handlePublish(dynamic_cast<PublishMessage*>(msg));
+			} else if(stm->getType() == stm->JOIN_MESSAGE){
+				handleJoinMessage(dynamic_cast<JoinMessage*>(msg));
 			} else if(stm->getType() == stm->CONNECTION_MESSAGE){
 				handleConnectionMessage(dynamic_cast<ConnectMessage*>(msg));
 			} else if(stm->getType() == stm->MWOE_MESSAGE){
@@ -70,41 +73,154 @@ void OptimalBroker::handleMessage(cMessage* msg)
 void OptimalBroker::handleNameServerMessage(NSMessage* nsm)
 {
 
-
-	if(converged)
-	{
-
 			LinkedList<STNode>* list = dynamic_cast<LinkedList<STNode>*>(nsm->getRequestedNodes());
-
 			availableBrokers.removeAll();
 
-			LinkedList<NeighbourEntry>* adjecentBrokers =  neighboursMap.getBrokersList();
-			for(Node<NeighbourEntry>* ne = adjecentBrokers->start;(ne!=NULL); ne=ne->getNext())
-			{
-
-				ne->getContent()->getOutGate()->disconnect();
-				neighboursMap.removeMapping(ne->getContent()->getNeighbour());
-				//receivedConnects.removeMapping(dynamic_cast<Broker*>(ne->getContent()->getNeighbour()));
-			}
-
+			//Update the list of available (alive) brokers
 			for(int i = 0; list->getSize();i++)
 			{
 				availableBrokers.addToBack(dynamic_cast<Broker*>(list->removeFromFront()));
 			}
-			if (!availableBrokers.isEmpty())
+
+
+
+				for(Node<Broker>* node = availableBrokers.start; node!=NULL; node=node->getNext())
+				{
+					JoinMessage* join = new JoinMessage();
+					join->requester=this;
+					join->convergenceNo = nsm->getConvergenceNumber();
+					join->leaving = false;
+					initial = true;
+
+					if(node->getContent()!=this)
+						sendDirect(join,dynamic_cast<Broker*>(node->getContent())->getFreeInputGate());
+					else
+					{
+						scheduleAt(simTime(),join);
+
+					}
+				}
+
+			scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+			cancelAndDelete(nsm);
+
+
+
+}
+
+void OptimalBroker::sleep(){
+
+	LinkedList<NeighbourEntry>* brokersList = neighboursMap.getBrokersList();
+	if(converged && brokersList->size>0)
+	{
+
+		//inform others
+		for(Node<Broker>* node = availableBrokers.start; node!=NULL; node=node->getNext())
+		{
+			JoinMessage* join = new JoinMessage();
+			join->requester=this;
+			join->convergenceNo = currentConvergence+1;
+			join->leaving = true;
+
+			if(node->getContent()!=this)
+				sendDirect(join,dynamic_cast<Broker*>(node->getContent())->getFreeInputGate());
+			else
+				scheduleAt(simTime(),join);
+
+		}
+	}
+	else
+	{
+		//sometime later...
+		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
+		return;
+	}
+
+
+
+}
+
+
+void OptimalBroker::handleJoinMessage(JoinMessage* msg)
+{
+
+
+
+	if(converged && (msg->convergenceNo==currentConvergence+1 || initial))
+	{
+		initial = false;
+
+		//Update the list of available (alive) brokers if joining
+		if(msg->requester!=this && msg->leaving==false)
+			availableBrokers.addToBack(msg->requester);
+
+		//if leaving
+		if(msg->requester!=this && msg->leaving==true)
+			availableBrokers.removeNode(msg->requester);
+
+		if(msg->leaving==true && msg->requester==this)
+		{
+		//this is if this broker is leaving
+
+			//inform NS
+			sendDirect(new DisconnectionRequestMessage(this), getNSGate());
+
+			//send disconnect reqs to all nighbours
+			LinkedList<NeighbourEntry>* nList = neighboursMap.getNeighboursList();
+			for (NeighbourEntry* ne = nList->removeFromFront();ne!=NULL;ne = nList->removeFromFront()){
+
+				//sent disconnnect to clients only
+				if(dynamic_cast<Client*>(ne->getNeighbour())!=NULL)
+					send(new DisconnectionRequestMessage(this), ne->getOutGate());
+				//disconnect from all
+				ne->getOutGate()->disconnect();
+				neighboursMap.removeMapping(ne->getNeighbour()); //this entry will become null
+			}
+			delete (nList);
+
+			LinkedList<NeighbourEntry>* brokersList = neighboursMap.getBrokersList();
+			delete(brokersList);
+
+			scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
+
+		}
+		else
+		{
+		//this is in case of other brokers either leavling or joining or this broker joining
+
+			//disconnect with all adjecent brokers
+			//TO DO: send disconnect request
+			LinkedList<NeighbourEntry>* adjecentNodes =  neighboursMap.getNeighboursList();
+			for(Node<NeighbourEntry>* ne = adjecentNodes->start;(ne!=NULL); ne=ne->getNext())
 			{
-				initiateProtocol();
+
+				//sent disconnnect msg to clients only
+				if(dynamic_cast<Client*>(ne->getContent()->getNeighbour())!=NULL)
+					send(new DisconnectionRequestMessage(this), ne->getContent()->getOutGate());
+
+				//disconnect from everyone
+				ne->getContent()->getOutGate()->disconnect();
+				neighboursMap.removeMapping(ne->getContent()->getNeighbour());
 			}
 
-			cancelAndDelete(nsm);
+
+			currentConvergence = msg->convergenceNo;
+			initiateProtocol();
+
+		}
+		cancelAndDelete(msg);
 
 
 	}
 	else
 	{
-		scheduleAt(simTime()+par("ConverganceDelay").doubleValue()*(availableBrokers.getSize()+1),nsm);
+
+		awaitingNSMsgs.enqueue(msg);
 	}
 }
+
+
+
 
 
 void OptimalBroker::initiateProtocol()
@@ -115,8 +231,22 @@ void OptimalBroker::initiateProtocol()
 			leaderHop = NULL; 		//if leader hop is null than don't send but schedule
 			members.removeAll();
 			members.addToBack(new long(id));
+
+			//TODO dispose of messages...
 			sentConnects.removeAll();
-			receivedMWOEs.removeAll();
+
+			for(int i = 0;i<receivedConnects.getSize();i++)
+			{
+				ConnectMessage* con = receivedConnects.getValue(i);
+				if(con->convergenceNumber<currentConvergence)
+				{
+					receivedConnects.removeMapping(i);
+					cancelAndDelete(con);
+					i--;
+				}
+			}
+
+
 
 			findAndSendMWOE();
 
@@ -124,7 +254,7 @@ void OptimalBroker::initiateProtocol()
 
 bool OptimalBroker::isConverged()
 {
-	if(members.getSize()==availableBrokers.getSize()+1)
+	if(members.getSize()==availableBrokers.getSize())
 	{
 		return true;
 	}
@@ -221,37 +351,45 @@ void OptimalBroker::findAndSendMWOE()
 	else
 	{
 		//algorithm converged
-		sentConnects.removeAll();
-
-
-		LinkedList<NeighbourEntry>* adjecentBrokers =  neighboursMap.getBrokersList();
-		for(Node<NeighbourEntry>* ne = adjecentBrokers->start;(ne!=NULL); ne=ne->getNext())
+		if(!awaitingNSMsgs.isEmpty())
 		{
-			receivedConnects.removeMapping(dynamic_cast<Broker*>(ne->getContent()->getNeighbour()));
+			scheduleAt(simTime()+par("ConverganceDelay").doubleValue()*availableBrokers.getSize(),awaitingNSMsgs.dequeue());
+			bufferedSubs.dequeueAll();
 		}
+		else
+		{
+			while(!bufferedSubs.isEmpty())
+			{
+				handleSubscription(bufferedSubs.dequeue());
+			}
+		}
+
+
 	}
 
 }
 
 void OptimalBroker::handleMWOEMessage(MWOEMessage* msg)
 {
-	if(!isLeader())
-	{
 
-		msg->piggyback.push(this);
-		send(msg,leaderHop);
-	}
-	else
-	{
-		receivedMWOEs.addToBack(msg);
-		if(allMWOEReceived())
+		if(!isLeader())
 		{
-			findBestMWOE();
-			receivedMWOEs.removeAll();
+
+			msg->piggyback.push(this);
+			send(msg,leaderHop);
+		}
+		else
+		{
+			receivedMWOEs.addToBack(msg);
+			if(allMWOEReceived())
+			{
+				findBestMWOE();
+				receivedMWOEs.removeAll();
+			}
+
+
 		}
 
-
-	}
 }
 
 void OptimalBroker::handleExpandMessage(ExpandMessage* msg)
@@ -331,28 +469,44 @@ void OptimalBroker::handleUpdateMessage(UpdateMessage* msg)
 void OptimalBroker::handleConnectionMessage(ConnectMessage* msg)
 {
 
-	ConnectMessage* con = sentConnects.getValue(msg->broker);
-	if(con!=NULL)
+	if(msg->convergenceNumber==currentConvergence)
 	{
-		connect(msg);
-		findAndSendMWOE();
+		ConnectMessage* con = sentConnects.getValue(msg->broker);
+		if(con!=NULL)
+		{
+			connect(msg);
+			findAndSendMWOE();
+		}
+		else
+		{
+
+			receivedConnects.setMapping(msg->broker,msg);
+
+		}
 	}
 	else
 	{
-		receivedConnects.setMapping(msg->broker,msg);
+		if(msg->convergenceNumber>currentConvergence)
+		{
+			receivedConnects.setMapping(msg->broker,msg);
+		}
 	}
 
 }
+
+
 
 
 void OptimalBroker::sendConnection(Broker* broker)
 {
 	ConnectMessage* con = new ConnectMessage();
 
+	/*   //OLD COPY
 	for(Node<long>* node = members.start; node !=NULL ;node = node->getNext())
 	{
 		if(node !=NULL)
 		{
+
 			if(node->getContent() !=NULL)
 			{
 				long* b = new long;
@@ -361,13 +515,27 @@ void OptimalBroker::sendConnection(Broker* broker)
 			}
 		}
 	}
+	*/
+	memberCopy(&(con->members));
 	con->broker=this;
+	con->convergenceNumber = currentConvergence;
 
-	ConnectMessage* msg = receivedConnects.getValue(broker);
+	ConnectMessage* msg = getReceivedConnectsForCurrentConvergence(broker, currentConvergence);
+
+
 	if(msg!=NULL)
 	{
-		connect(msg);
-		findAndSendMWOE();
+
+		if(msg->broker==broker)
+		{
+
+			connect(msg);
+			findAndSendMWOE();
+		}
+		else
+		{
+			cout << "Map bug!" <<endl;
+		}
 	}
 	else
 	{
@@ -380,7 +548,7 @@ void OptimalBroker::sendConnection(Broker* broker)
 
 void OptimalBroker::connect(ConnectMessage* msg)
 {
-
+	/* OLD UNION
 	for(Node<long>* node = msg->members.start;node !=NULL;node = node->getNext())
 	{
 		bool cond = true;
@@ -405,7 +573,8 @@ void OptimalBroker::connect(ConnectMessage* msg)
 		}
 
 	}
-
+	 */
+	memberUnion(&(msg->members));
 	long newLeader = calculateNewLeader(&members);
 
 	cGate* myGate = getFreeOutputGate();
@@ -444,7 +613,7 @@ void OptimalBroker::connect(ConnectMessage* msg)
 
 
 	neighboursMap.addMapping(msg->broker, myGate);
-	cancelAndDelete(msg);
+
 }
 
 
@@ -553,6 +722,96 @@ bool OptimalBroker::isLeader()
 		return true;
 	else return false;
 }
+
+void OptimalBroker::memberUnion(LinkedList<long>* newList)
+{
+
+
+			Node<long>* node = newList->start;
+			for(int i=0;i<newList->getSize();i++)
+			{
+				bool cond = true;
+				for(Node<long>* n=members.start;n!=NULL;n=n->getNext())
+				{
+					if(node!=NULL && n!=NULL)
+					{
+						if(*(n->getContent())==*(node->getContent()))
+						{
+							cond=false;
+						}
+					}
+					else
+					{
+						break;
+					}
+
+				}
+
+
+				if(cond)
+				{
+					members.addToBack(new long(*(node->getContent())));
+				}
+				node = node->getNext();
+			}
+
+}
+
+void OptimalBroker::memberCopy(LinkedList<long>* newMembers)
+{
+	Node<long>* node = members.start;
+	for(int i=0;i<members.getSize();i++)
+	{
+		long* b = node->getContent();
+		long* a = new long(*(b));
+		newMembers->addToBack(a);
+		if(newMembers->end->getContent()==NULL)
+		{
+			cout << "Bug!" <<endl;
+		}
+		node = node->getNext();
+	}
+}
+
+ConnectMessage* OptimalBroker::getReceivedConnectsForCurrentConvergence(Broker* broker, long convergence)
+{
+	ConnectMessage* msg;
+	int index = receivedConnects.getIndex(broker);
+
+	while(index!=-1)
+	{
+		msg=receivedConnects.getValue(index);
+		if(msg->convergenceNumber==convergence)
+		{
+			return msg;
+		}
+		else
+		{
+			index = receivedConnects.getIndex(broker,index+1);
+		}
+	}
+	return NULL;
+
+
+
+}
+
+void OptimalBroker::handleSubscription(SubscriptionMessage* sm)
+{
+	if(converged)
+	{
+		AcyclicBroker::handleSubscription(sm);
+	}
+	else
+	{
+		if(neighboursMap.hasNode(sm->getSubscriber()))
+			bufferedSubs.enqueue(sm);
+	}
+}
+
+
+
+
 
 OptimalBroker::~OptimalBroker() {
 	// TODO Auto-generated destructor stub

@@ -20,6 +20,14 @@ ConnectMessage::ConnectMessage() {
 	messageType=CONNECTION_MESSAGE;
 }
 
+ostream& operator<<(ostream& out, ConnectMessage* msg)
+{
+
+	out << "Broker: " << msg->broker->getId() << " Convergence number: " << msg->convergenceNumber;
+	return out;
+}
+
 ConnectMessage::~ConnectMessage() {
 	// TODO Auto-generated destructor stub
+
 }
