@@ -36,13 +36,8 @@ Client::Client() {
 		vectors[i] = new VectorClock();
 		vectors[i]->getTimeStamp()->addToBack(new Pair(this,0));
 	}
-	/*timeStamp = new VectorClock();
-	Pair *pair = new Pair(this,0);
-	timeStamp->getTimeStamp()->addToBack(pair);*/
-
 }
 Client::~Client() {
-	//delete timeStamp;
 	cancelAndDelete(publishDelayMsg);
 	cancelAndDelete(subscribeDelayMsg);
 	cancelAndDelete(unsubscribeDelayMsg);
