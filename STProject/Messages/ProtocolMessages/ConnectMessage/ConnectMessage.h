@@ -19,14 +19,18 @@
 #include "STMessage.h"
 #include "Broker.h"
 #include "LinkedList.h"
+#include <iostream>
 
 class ConnectMessage: public STMessage {
 public:
 	LinkedList<long> members;
 	Broker* broker;
+	long convergenceNumber;
 
 	ConnectMessage();
 	virtual ~ConnectMessage();
+	friend ostream& operator<<(ostream& out, ConnectMessage* msg);
+
 };
 
 #endif /* CONNECTMESSAGE_H_ */

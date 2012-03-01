@@ -28,11 +28,14 @@ public:
 
 	void setRequesterNode(STNode* r);
 	STNode* getRequester();
+	void setConvergenceNumber(long num);
+	long getConvergenceNumber();
 
 	void addRequestedNode(STNode* r);
 
 	LinkedList<STNode>* getRequestedNodes();
 private:
+	long convergenceNo;
 	STNode* requester;
 	LinkedList<STNode> requested;
 };

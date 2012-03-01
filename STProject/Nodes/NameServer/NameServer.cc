@@ -25,7 +25,7 @@ NetworkConditionTable* STNode::conditionTable;
 //____________Construction
 NameServer::NameServer() {
 	srand(time(0));
-
+	convergenceNumber = 1;
 
 
 }
@@ -88,36 +88,29 @@ void NameServer::handleBrokerRequest(NSMessage* msg) {
 
 		//this is sending msg to all brokers
 		registerBroker(dynamic_cast<Broker*>(msg->getRequester()));
-		cancelAndDelete(msg);
 
-		for(Node<Broker>* node=brokerList.start;(node!=NULL);node=node->getNext())
-		{
+
+
 			NSMessage* newMsg = new NSMessage();
-			Broker* b = node->getContent();
+			Broker* b = dynamic_cast<Broker*>(msg->getRequester());
 
 			if (!brokerList.isEmpty())
 			{
 				Node<Broker>* traverse = brokerList.start;
 				while(traverse!=brokerList.end)
 				{
-					if(traverse->getContent()!=b)
-					{
-						newMsg->addRequestedNode(traverse->getContent());
-
-					}
+					newMsg->addRequestedNode(traverse->getContent());
 					traverse= traverse->getNext();
 				}
-				if(traverse->getContent()!=b)
-				{
-					newMsg->addRequestedNode(traverse->getContent());
-				}
+				newMsg->addRequestedNode(traverse->getContent());
 			}
 
-
+			newMsg->setConvergenceNumber(convergenceNumber);
 			sendDirect(newMsg, b->gate("updIn"));
 
-		}
 
+		cancelAndDelete(msg);
+		convergenceNumber++;
 
 	//this sends only to one that sent the message
 	/*
@@ -206,6 +199,7 @@ void NameServer::handleUnregisterRequest(DisconnectionRequestMessage* msg) {
 	Broker* b = dynamic_cast<Broker*>(msg->getRequesterNode());
 	if (b != NULL) {
 
+		convergenceNumber++;
 		//we must remove him from the vector
 		if(brokerList.removeNode(b)==NULL)
 		{
@@ -213,6 +207,7 @@ void NameServer::handleUnregisterRequest(DisconnectionRequestMessage* msg) {
 		}
 		else
 		{
+
 			cancelAndDelete(msg);
 		}
 	}

@@ -25,7 +25,17 @@
 
 	void NSMessage::addRequestedNode(STNode* r){requested.addToBack(r);}
 	LinkedList<STNode>* NSMessage::getRequestedNodes(){return &requested;}
-//___________Construct
+
+	void NSMessage::setConvergenceNumber(long num)
+	{
+		convergenceNo = num;
+	}
+	long NSMessage::getConvergenceNumber()
+	{
+		return convergenceNo;
+	}
+
+	//___________Construct
 NSMessage::NSMessage() {
 	messageType = NAME_SERVER_MSG;
 }

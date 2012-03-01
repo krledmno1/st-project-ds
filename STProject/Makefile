@@ -24,6 +24,7 @@ INCLUDE_PATH = \
     -IMessages/ProtocolMessages \
     -IMessages/ProtocolMessages/ConnectMessage \
     -IMessages/ProtocolMessages/ExpandMessage \
+    -IMessages/ProtocolMessages/JoinMessage \
     -IMessages/ProtocolMessages/MWOEMessage \
     -IMessages/ProtocolMessages/UpdateMessage \
     -IMessages/PublishMessage \
@@ -42,6 +43,7 @@ INCLUDE_PATH = \
     -IUtilities \
     -IUtilities/LinkedList \
     -IUtilities/NetworkConditionTable \
+    -IUtilities/Queue \
     -IUtilities/Stack
 
 # Additional object and library files to link with
@@ -63,6 +65,7 @@ OBJS = \
     $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o \
     $O/Messages/ProtocolMessages/ConnectMessage/ConnectMessage.o \
     $O/Messages/ProtocolMessages/ExpandMessage/ExpandMessage.o \
+    $O/Messages/ProtocolMessages/JoinMessage/JoinMessage.o \
     $O/Messages/ProtocolMessages/MWOEMessage/MWOEMessage.o \
     $O/Messages/ProtocolMessages/UpdateMessage/UpdateMessage.o \
     $O/Messages/PublishMessage/PublishMessage.o \
@@ -74,7 +77,9 @@ OBJS = \
     $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o \
     $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o \
     $O/Nodes/Brokers/OptimalBroker/OptimalBroker.o \
+    $O/Nodes/Clients/VectorClock.o \
     $O/Nodes/Clients/Client.o \
+    $O/Nodes/Clients/Pair.o \
     $O/Nodes/NameServer/NameServer.o \
     $O/Nodes/SubscriptionMonitor/SubscriptionMonitor.o \
     $O/Nodes/_STNode/STNode.o \
@@ -154,6 +159,7 @@ clean:
 	-rm -f Messages/ProtocolMessages/*_m.cc Messages/ProtocolMessages/*_m.h
 	-rm -f Messages/ProtocolMessages/ConnectMessage/*_m.cc Messages/ProtocolMessages/ConnectMessage/*_m.h
 	-rm -f Messages/ProtocolMessages/ExpandMessage/*_m.cc Messages/ProtocolMessages/ExpandMessage/*_m.h
+	-rm -f Messages/ProtocolMessages/JoinMessage/*_m.cc Messages/ProtocolMessages/JoinMessage/*_m.h
 	-rm -f Messages/ProtocolMessages/MWOEMessage/*_m.cc Messages/ProtocolMessages/MWOEMessage/*_m.h
 	-rm -f Messages/ProtocolMessages/UpdateMessage/*_m.cc Messages/ProtocolMessages/UpdateMessage/*_m.h
 	-rm -f Messages/PublishMessage/*_m.cc Messages/PublishMessage/*_m.h
@@ -172,13 +178,14 @@ clean:
 	-rm -f Utilities/*_m.cc Utilities/*_m.h
 	-rm -f Utilities/LinkedList/*_m.cc Utilities/LinkedList/*_m.h
 	-rm -f Utilities/NetworkConditionTable/*_m.cc Utilities/NetworkConditionTable/*_m.h
+	-rm -f Utilities/Queue/*_m.cc Utilities/Queue/*_m.h
 	-rm -f Utilities/Stack/*_m.cc Utilities/Stack/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/ProtocolMessages/*.cc Messages/ProtocolMessages/ConnectMessage/*.cc Messages/ProtocolMessages/ExpandMessage/*.cc Messages/ProtocolMessages/MWOEMessage/*.cc Messages/ProtocolMessages/UpdateMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Brokers/OptimalBroker/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc Utilities/Stack/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/ProtocolMessages/*.cc Messages/ProtocolMessages/ConnectMessage/*.cc Messages/ProtocolMessages/ExpandMessage/*.cc Messages/ProtocolMessages/JoinMessage/*.cc Messages/ProtocolMessages/MWOEMessage/*.cc Messages/ProtocolMessages/UpdateMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Brokers/OptimalBroker/*.cc Nodes/Clients/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc Utilities/Queue/*.cc Utilities/Stack/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -198,11 +205,13 @@ $O/Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.o: Messages/
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Messages/_Super/STMessage.h
 $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -214,11 +223,13 @@ $O/Messages/NSMsg/NSMessage.o: Messages/NSMsg/NSMessage.cc \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -231,12 +242,14 @@ $O/Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.o: Message
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/ProtocolMessages/ConnectMessage/ConnectMessage.o: Messages/ProtocolMessages/ConnectMessage/ConnectMessage.cc \
-	Messages/ProtocolMessages/ConnectMessage/ConnectMessage.h \
 	Utilities/NetworkConditionTable/Map.h \
+	Messages/ProtocolMessages/ConnectMessage/ConnectMessage.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -248,12 +261,14 @@ $O/Messages/ProtocolMessages/ConnectMessage/ConnectMessage.o: Messages/ProtocolM
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/ProtocolMessages/ExpandMessage/ExpandMessage.o: Messages/ProtocolMessages/ExpandMessage/ExpandMessage.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/Stack/Stack.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/ProtocolMessages/ExpandMessage/ExpandMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
@@ -265,7 +280,27 @@ $O/Messages/ProtocolMessages/ExpandMessage/ExpandMessage.o: Messages/ProtocolMes
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
+$O/Messages/ProtocolMessages/JoinMessage/JoinMessage.o: Messages/ProtocolMessages/JoinMessage/JoinMessage.cc \
+	Nodes/Clients/Pair.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
+	Nodes/_STNode/STNode.h \
+	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
+	Messages/PublishMessage/PublishMessage.h \
+	Messages/ProtocolMessages/JoinMessage/JoinMessage.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
+	Messages/NSMsg/NSMessage.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Nodes/Brokers/Broker.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/ProtocolMessages/MWOEMessage/MWOEMessage.o: Messages/ProtocolMessages/MWOEMessage/MWOEMessage.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Messages/ProtocolMessages/MWOEMessage/MWOEMessage.h \
@@ -273,6 +308,7 @@ $O/Messages/ProtocolMessages/MWOEMessage/MWOEMessage.o: Messages/ProtocolMessage
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -285,11 +321,13 @@ $O/Messages/ProtocolMessages/MWOEMessage/MWOEMessage.o: Messages/ProtocolMessage
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/ProtocolMessages/UpdateMessage/UpdateMessage.o: Messages/ProtocolMessages/UpdateMessage/UpdateMessage.cc \
 	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/ProtocolMessages/UpdateMessage/UpdateMessage.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -302,11 +340,13 @@ $O/Messages/ProtocolMessages/UpdateMessage/UpdateMessage.o: Messages/ProtocolMes
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Messages/PublishMessage/PublishMessage.o: Messages/PublishMessage/PublishMessage.cc \
 	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Utilities/NetworkConditionTable/NetworkConditionTable.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h
 $O/Messages/SubscriptionMessage/SubscriptionMessage.o: Messages/SubscriptionMessage/SubscriptionMessage.cc \
 	Utilities/NetworkConditionTable/Map.h \
@@ -327,11 +367,13 @@ $O/Messages/UnsubscriptionMessage/UnsubscriptionMessage.o: Messages/Unsubscripti
 $O/Messages/_Super/STMessage.o: Messages/_Super/STMessage.cc \
 	Messages/_Super/STMessage.h
 $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
@@ -346,11 +388,13 @@ $O/Nodes/Brokers/Broker.o: Nodes/Brokers/Broker.cc \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/AcyclicBroker.cc \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Nodes/Brokers/AcyclicBroker/AcyclicBroker.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
@@ -367,16 +411,18 @@ $O/Nodes/Brokers/AcyclicBroker/AcyclicBroker.o: Nodes/Brokers/AcyclicBroker/Acyc
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
 $O/Nodes/Brokers/NeighboursMap/NeighboursMap.o: Nodes/Brokers/NeighboursMap/NeighboursMap.cc \
 	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
 	Nodes/Clients/Client.h \
 	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
-	Utilities/NetworkConditionTable/NetworkConditionTable.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
@@ -392,41 +438,49 @@ $O/Nodes/Brokers/NeighboursMap/NeighbourEntry.o: Nodes/Brokers/NeighboursMap/Nei
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Nodes/_STNode/STNode.h
 $O/Nodes/Brokers/OptimalBroker/OptimalBroker.o: Nodes/Brokers/OptimalBroker/OptimalBroker.cc \
-	Utilities/NetworkConditionTable/Map.h \
 	Messages/ProtocolMessages/ConnectMessage/ConnectMessage.h \
 	Utilities/Stack/Stack.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Messages/ProtocolMessages/MWOEMessage/MWOEMessage.h \
-	Utilities/LinkedList/LinkedList.h \
 	Nodes/Brokers/OptimalBroker/OptimalBroker.h \
+	Nodes/Clients/VectorClock.h \
+	Messages/ProtocolMessages/JoinMessage/JoinMessage.h \
+	Utilities/Queue/GenericQueue.h \
+	Messages/SubscriptionMessage/SubscriptionMessage.h \
+	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Nodes/Clients/Client.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
+	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h \
+	Nodes/Clients/Pair.h \
+	Utilities/NetworkConditionTable/Map.h \
+	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/ProtocolMessages/UpdateMessage/UpdateMessage.h \
 	Messages/_Super/STMessage.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Nodes/Brokers/AcyclicBroker/AcyclicBroker.h \
 	Messages/ProtocolMessages/ExpandMessage/ExpandMessage.h \
-	Messages/SubscriptionMessage/SubscriptionMessage.h \
-	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
-	Utilities/NetworkConditionTable/NetworkConditionTable.h \
-	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
 	Nodes/SubscriptionMonitor/SubscriptionMonitor.h \
-	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
-	Nodes/Brokers/Broker.h \
-	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
+	Nodes/Brokers/Broker.h
 $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \
+	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Nodes/Clients/Client.h \
 	Utilities/NetworkConditionTable/NetworkConditionTable.h \
-	Messages/NewBrokerNotificationMessage/NewBrokerNotificationMessage.h \
 	Nodes/Brokers/NeighboursMap/NeighboursMap.h \
 	Nodes/Brokers/NeighboursMap/NeighbourEntry.h \
 	Messages/NSMsg/NSMessage.h \
@@ -434,13 +488,30 @@ $O/Nodes/Clients/Client.o: Nodes/Clients/Client.cc \
 	Messages/DisconnectionRequestMessage/DisconnectionRequestMessage.h \
 	Nodes/Brokers/Broker.h \
 	Messages/UnsubscriptionMessage/UnsubscriptionMessage.h
+$O/Nodes/Clients/VectorClock.o: Nodes/Clients/VectorClock.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Utilities/LinkedList/LinkedList.h \
+	Nodes/_STNode/STNode.h \
+	Nodes/Clients/VectorClock.h
+$O/Nodes/Clients/Pair.o: Nodes/Clients/Pair.cc \
+	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
+	Utilities/NetworkConditionTable/KeyValue.h \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/NetworkConditionTable/NetworkConditionTable.h \
+	Nodes/_STNode/STNode.h
 $O/Nodes/NameServer/NameServer.o: Nodes/NameServer/NameServer.cc \
 	Utilities/NetworkConditionTable/Map.h \
+	Nodes/Clients/Pair.h \
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Nodes/NameServer/NameServer.h \
 	Utilities/LinkedList/LinkedList.h \
 	Nodes/_STNode/STNode.h \
 	Messages/_Super/STMessage.h \
+	Nodes/Clients/VectorClock.h \
 	Messages/PublishMessage/PublishMessage.h \
 	Messages/SubscriptionMessage/SubscriptionMessage.h \
 	Messages/ConnectionRequestMessage/ConnectionRequestMessage.h \

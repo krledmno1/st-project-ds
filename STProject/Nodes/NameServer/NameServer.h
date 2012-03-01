@@ -46,7 +46,7 @@ private:
 
 	//try to refactor with linked list
 	LinkedList<Broker> brokerList;
-
+	long convergenceNumber;
 	void registerBroker(Broker* b); //its more then just appending the broker to the vector. In case vector has null entries corrisponding to removed Brokers, it shouldn't extend the vector but simply insert it in a null position (clearly we should use LinkedLists, not vectors)
 };
 
