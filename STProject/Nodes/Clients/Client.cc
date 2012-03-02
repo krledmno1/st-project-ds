@@ -103,7 +103,9 @@ void Client::goSleep() {
 	cancelEvent(subscribeDelayMsg);
 	cancelEvent(unsubscribeDelayMsg);
 	cancelEvent(publishDelayMsg);
+	cancelEvent(wakeUpDelayMsg);
 	subscriptionMonitor->unsubscribeAll();
+	releaseMessages();
 	send(new DisconnectionRequestMessage(this), gate("out"));
 	gate("out")->disconnect();
 	scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
@@ -140,6 +142,17 @@ void Client::unsubscribe() {
 	scheduleAt(simTime() + par("UnSubscriptionPeriod"), unsubscribeDelayMsg);
 }
 
+void Client::flushVectorClocks() {
+	for (int i=0;i<NR_TOPICS;i++){
+		VectorClock* toBeDeleted = vectors[i];
+		int value = toBeDeleted ->search(this)->getValue();
+		delete(toBeDeleted);
+		VectorClock* newVectorClock = new VectorClock();
+		newVectorClock->timeStamp->addToBack(new Pair(this,value));
+		vectors[i] = newVectorClock;
+	}
+}
+
 /* This is also the procedure which activates the Node. Wakeup only contacts the NS */
 void Client::handleNameServerMessage(NSMessage* nsm) {
 	//this is the reply we get from NS when we ask for a broker
@@ -168,7 +181,7 @@ void Client::handleNameServerMessage(NSMessage* nsm) {
 			cGate* hisGate = best->getFreeInputGate();
 			if (myGate == NULL || hisGate == NULL) {
 				//try later
-				//cancelEvent(wakeUpDelayMsg);
+				cancelEvent(wakeUpDelayMsg);
 				scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 				return;
 			}
@@ -216,6 +229,8 @@ void Client::handleBrokerDisconnectionRequest() { //if a broker wishes to discon
 	cancelEvent(publishDelayMsg);
 	cancelEvent(sleepDelayMsg); //because if it comes before the Reconnection wake up, we end up wanting to disconnect when we are already disconnected
 	gate("out")->disconnect();
+	releaseMessages();
+	cancelEvent(wakeUpDelayMsg);
 	scheduleAt(simTime() + par("ReconnectDelay"), wakeUpDelayMsg);
 }
 
@@ -371,3 +386,9 @@ void Client::checkPostponed() {
 	}
 }
 
+void Client::releaseMessages() {
+	while (postponedMessages.size>0){
+		checkPostponed();
+		flushVectorClocks();
+	}
+}

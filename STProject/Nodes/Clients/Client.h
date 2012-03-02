@@ -46,6 +46,7 @@ private:
 	void goSleep();
 	void subscribe();
 	void unsubscribe();
+	void flushVectorClocks(); //this method resets only the vector clocks of the others. Our timestamp remains intact.
 	void publish();
 	//external message handling
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
@@ -54,6 +55,7 @@ private:
 	void handlePublishMessage(PublishMessage* pm);
 	bool checkReceiveCondition(PublishMessage* msg);
 	void checkPostponed();
+	void releaseMessages();
 
 	cMessage* publishDelayMsg;
 	cMessage* subscribeDelayMsg;
