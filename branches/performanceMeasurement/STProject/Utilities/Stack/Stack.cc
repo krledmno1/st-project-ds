@@ -13,38 +13,5 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef KEYVALUE_H_
-#define KEYVALUE_H_
+#include "Stack.h"
 
-#include <iostream>
-
-
-template<class A, class B>
-class KeyValue {
-public:
-	KeyValue();
-	virtual ~KeyValue();
-	A* key;
-	B value;
-	void print();
-};
-
-template<class A, class B>
-KeyValue<A,B>::KeyValue() {
-	// TODO Auto-generated constructor stub
-
-}
-
-template<class A, class B>
-void KeyValue<A,B>::print()
-{
-	std::cout << "Key: " << key << " --> Value: ";
-	std::cout << value << std::endl;
-}
-
-template<class A, class B>
-KeyValue<A,B>::~KeyValue() {
-	// TODO Auto-generated destructor stub
-}
-
-#endif /* KEYVALUE_H_ */

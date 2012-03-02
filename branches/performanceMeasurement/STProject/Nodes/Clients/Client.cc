@@ -168,6 +168,7 @@ void Client::handleNameServerMessage(NSMessage* nsm) {
 			cGate* hisGate = best->getFreeInputGate();
 			if (myGate == NULL || hisGate == NULL) {
 				//try later
+				//cancelEvent(wakeUpDelayMsg);
 				scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 				return;
 			}
@@ -196,10 +197,12 @@ void Client::handleNameServerMessage(NSMessage* nsm) {
 			return;
 
 		} else {
+			cancelEvent(wakeUpDelayMsg);
 			scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 			return;
 		}
 	} else {
+		cancelEvent(wakeUpDelayMsg);
 		scheduleAt(simTime() + par("WakeUpDelay"), wakeUpDelayMsg);
 		return;
 	}
