@@ -13,38 +13,66 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef KEYVALUE_H_
-#define KEYVALUE_H_
+#ifndef STACK_H_
+#define STACK_H_
 
-#include <iostream>
+#include "LinkedList.h"
 
-
-template<class A, class B>
-class KeyValue {
+template<class T>
+class Stack {
 public:
-	KeyValue();
-	virtual ~KeyValue();
-	A* key;
-	B value;
-	void print();
+
+	void push(T* t);
+	T* pop();
+	T* top();
+	bool isEmpty();
+
+	Stack();
+	virtual ~Stack();
+
+private:
+	LinkedList<T> stack;
 };
 
-template<class A, class B>
-KeyValue<A,B>::KeyValue() {
+
+
+template<class T>
+Stack<T>::Stack() {
 	// TODO Auto-generated constructor stub
 
 }
-
-template<class A, class B>
-void KeyValue<A,B>::print()
+template<class T>
+void Stack<T>::push(T* t)
 {
-	std::cout << "Key: " << key << " --> Value: ";
-	std::cout << value << std::endl;
+	stack.addToFront(t);
 }
 
-template<class A, class B>
-KeyValue<A,B>::~KeyValue() {
+template<class T>
+T* Stack<T>::pop()
+{
+	if(!stack.isEmpty())
+		return stack.removeFromFront();
+	else return NULL;
+}
+
+template<class T>
+T* Stack<T>::top()
+{
+	if(!stack.isEmpty())
+		return stack.getStart();
+	else return NULL;
+}
+
+template<class T>
+bool Stack<T>::isEmpty(){
+	return stack.isEmpty();
+}
+
+
+template<class T>
+Stack<T>::~Stack() {
 	// TODO Auto-generated destructor stub
 }
 
-#endif /* KEYVALUE_H_ */
+
+#endif /* STACK_H_ */

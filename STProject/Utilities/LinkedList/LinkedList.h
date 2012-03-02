@@ -1,6 +1,8 @@
 #ifndef LINKEDLISTHPP
 #define LINKEDLISTHPP
 
+#include <stdlib.h>
+
 template<class T>
 class Node
 {
@@ -269,6 +271,11 @@ T* LinkedList<T>::removeNode(T* n)
 		T* ret = node->getNext()->getContent();
 		Node<T>* temp = node->getNext();
 		node->setNext(node->getNext()->getNext());
+		if(end==temp)
+		{
+			end = node;
+		}
+
 		delete temp;
 		return ret;
 	}

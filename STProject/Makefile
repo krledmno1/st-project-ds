@@ -37,6 +37,8 @@ INCLUDE_PATH = \
     -IUtilities \
     -IUtilities/LinkedList \
     -IUtilities/NetworkConditionTable \
+    -IUtilities/Queue \
+    -IUtilities/Stack \
     -Iresults
 
 # Additional object and library files to link with
@@ -72,7 +74,8 @@ OBJS = \
     $O/Nodes/_STNode/STNode.o \
     $O/Utilities/NetworkConditionTable/KeyValue.o \
     $O/Utilities/NetworkConditionTable/Map.o \
-    $O/Utilities/NetworkConditionTable/NetworkConditionTable.o
+    $O/Utilities/NetworkConditionTable/NetworkConditionTable.o \
+    $O/Utilities/Stack/Stack.o
 
 # Message files
 MSGFILES =
@@ -168,13 +171,15 @@ clean:
 	-rm -f Utilities/*_m.cc Utilities/*_m.h
 	-rm -f Utilities/LinkedList/*_m.cc Utilities/LinkedList/*_m.h
 	-rm -f Utilities/NetworkConditionTable/*_m.cc Utilities/NetworkConditionTable/*_m.h
+	-rm -f Utilities/Queue/*_m.cc Utilities/Queue/*_m.h
+	-rm -f Utilities/Stack/*_m.cc Utilities/Stack/*_m.h
 	-rm -f results/*_m.cc results/*_m.h
 
 cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/Clients/vectorClocks/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc results/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc Messages/*.cc Messages/ConnectionRequestMessage/*.cc Messages/DisconnectionRequestMessage/*.cc Messages/NSMsg/*.cc Messages/NewBrokerNotificationMessage/*.cc Messages/PublishMessage/*.cc Messages/SubscriptionMessage/*.cc Messages/UnsubscriptionMessage/*.cc Messages/_Super/*.cc Nodes/*.cc Nodes/Brokers/*.cc Nodes/Brokers/AcyclicBroker/*.cc Nodes/Brokers/NeighboursMap/*.cc Nodes/Clients/*.cc Nodes/Clients/vectorClocks/*.cc Nodes/NameServer/*.cc Nodes/SubscriptionMonitor/*.cc Nodes/_STNode/*.cc Utilities/*.cc Utilities/LinkedList/*.cc Utilities/NetworkConditionTable/*.cc Utilities/Queue/*.cc Utilities/Stack/*.cc results/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/Messages/ConnectionRequestMessage/ConnectionRequestMessage.o: Messages/ConnectionRequestMessage/ConnectionRequestMessage.cc \
@@ -406,4 +411,7 @@ $O/Utilities/NetworkConditionTable/NetworkConditionTable.o: Utilities/NetworkCon
 	Utilities/NetworkConditionTable/KeyValue.h \
 	Utilities/NetworkConditionTable/Map.h \
 	Utilities/NetworkConditionTable/NetworkConditionTable.h
+$O/Utilities/Stack/Stack.o: Utilities/Stack/Stack.cc \
+	Utilities/LinkedList/LinkedList.h \
+	Utilities/Stack/Stack.h
 
