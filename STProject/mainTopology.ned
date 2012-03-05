@@ -26,7 +26,8 @@ simple Client
         volatile double SubscriptionPeriod @unit(s) = uniform(5s, 15s);
         volatile double UnSubscriptionPeriod @unit(s) = uniform(10s, 20s);
         volatile double PublishPeriod @unit(s) = uniform(2s, 10s);
-        
+        @statistic[PublishDelay](title="Publish Delay";record=max,timeavg,vector;unit=second);
+
         int nrInputGates = default(2);
     @display("i=device/laptop");
     gates:

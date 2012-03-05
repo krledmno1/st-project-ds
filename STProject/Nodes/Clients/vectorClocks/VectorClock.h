@@ -17,7 +17,6 @@ class STNode;
 
 class VectorClock {
 public:
-
 	LinkedList<Pair> *timeStamp;
 	VectorClock();
 	virtual ~VectorClock();
@@ -25,8 +24,8 @@ public:
     LinkedList<Pair>* getTimeStamp();
     void setTimeStamp(LinkedList<Pair> *timeStamp);
     Pair* search(STNode *stnode);
-private:
 
+    void printClock();
 };
 
 #endif /* VECTORCLOCK_H_ */

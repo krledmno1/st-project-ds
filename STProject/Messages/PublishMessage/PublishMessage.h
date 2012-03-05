@@ -28,12 +28,20 @@ public:
 
 	int getTopic();
 	STNode* getSender();
-    VectorClock *getTimeStamp();
+	STNode* getOriginalSender();
+    VectorClock* getTimeStamp();
     void setTimeStamp(VectorClock *timeStamp);
+	PublishMessage* clone(STNode* newSender);
+	simtime_t getCreationTime();
 private:
+	PublishMessage();
 	int topic;
 	STNode* sender;
+	STNode* originalSender;
 	VectorClock *timeStamp;
+	static int nextID;
+	int id;
+	simtime_t creationTime;
 };
 
 #endif /* PUBLISHMESSAGE_H_ */

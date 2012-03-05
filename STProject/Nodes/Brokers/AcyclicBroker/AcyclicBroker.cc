@@ -29,7 +29,7 @@ void AcyclicBroker::sleep(){	//TODO what if in the same time 2 connected brokers
 	LinkedList<NeighbourEntry>* brokersList = neighboursMap.getBrokersList();
 	if (brokersList->size<=0) { //it means we cannot sleep, we reschedule the sleep
 		scheduleAt(simTime() + par("SleepDelay"), sleepDelayMsg);
-		EV << "I cannot sleep, I'm alone";
+		//EV << "I cannot sleep, I'm alone";
 		return;
 	}
 	//step1: we need to redirect every other Broker, in order NOT to break the chain
@@ -79,11 +79,11 @@ void AcyclicBroker::handleDisconnectionRequest(DisconnectionRequestMessage* drm)
 
 void AcyclicBroker::handlePublish(PublishMessage* pm){
 	STNode* stn = pm->getSender();
-	int topic = pm->getTopic();
 	LinkedList<NeighbourEntry>* sList = neighboursMap.getSubscribers(pm->getTopic());
 	for (NeighbourEntry* ne = sList->removeFromFront();ne!=NULL;ne = sList->removeFromFront()){
 		if (ne->getNeighbour()!=stn){ //we dont send back messages
-			send (new PublishMessage(this,topic,pm->getTimeStamp()),ne->getOutGate());
+			//send (new PublishMessage(this,topic,pm->getTimeStamp()),ne->getOutGate());
+			send (pm->clone(this),ne->getOutGate());
 		}
 	}
 	delete (sList);
