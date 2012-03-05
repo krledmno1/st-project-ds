@@ -24,6 +24,7 @@
 #include "cgate.h"
 #include "SubscriptionMonitor.h"
 #include "NewBrokerNotificationMessage.h"
+#include <vector>
 
 class NewBrokerNotificationMessage;
 
@@ -38,20 +39,23 @@ protected:
 	virtual void handleMessage(cMessage *msg);
 	virtual void initialize();
 private:
-	VectorClock *timeStamp;
+	//VectorClock *timeStamp;
+	std::vector<VectorClock*> vectors;
 	LinkedList<PublishMessage> postponedMessages;
 	void wakeUp();
 	void goSleep();
 	void subscribe();
 	void unsubscribe();
+	void flushVectorClocks(); //this method resets only the vector clocks of the others. Our timestamp remains intact.
 	void publish();
 	//external message handling
 	void handleNameServerMessage(NSMessage* nsm); //this is the reply we get from NS when we ask for a broker
 	void handleBrokerDisconnectionRequest(); //if a broker wishes to disconnect, it is client's task to find another broker
 	void handleNewBrokerNotification(NewBrokerNotificationMessage* m);
-	void handlePublishMessage(PublishMessage* nsm);
+	void handlePublishMessage(PublishMessage* pm);
 	bool checkReceiveCondition(PublishMessage* msg);
 	void checkPostponed();
+	void releaseMessages();
 
 	cMessage* publishDelayMsg;
 	cMessage* subscribeDelayMsg;
@@ -59,6 +63,10 @@ private:
 
 	SubscriptionMonitor* subscriptionMonitor;
 	double currentPing;
+
+	simsignal_t delaySignal;
+
+	void exportMessage(PublishMessage* pm); //this method would bring the message to the upper layer. Its just logged for now
 };
 
 #endif /* CLIENT_H_ */
