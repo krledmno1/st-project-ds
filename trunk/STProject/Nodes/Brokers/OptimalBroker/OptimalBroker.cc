@@ -232,7 +232,7 @@ void OptimalBroker::initiateProtocol()
 			members.removeAll();
 			members.addToBack(new long(id));
 
-			//TODO dispose of messages...
+
 			sentConnects.removeAll();
 
 			for(int i = 0;i<receivedConnects.getSize();i++)
@@ -354,7 +354,12 @@ void OptimalBroker::findAndSendMWOE()
 		if(!awaitingNSMsgs.isEmpty())
 		{
 			scheduleAt(simTime()+par("ConverganceDelay").doubleValue()*availableBrokers.getSize(),awaitingNSMsgs.dequeue());
-			bufferedSubs.dequeueAll();
+
+			while(!bufferedSubs.isEmpty())
+			{
+				SubscriptionMessage* sub = bufferedSubs.dequeue();
+				cancelAndDelete(sub);
+			}
 		}
 		else
 		{
