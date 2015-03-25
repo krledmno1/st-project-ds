@@ -1,0 +1,5 @@
+Publish/Subscribe
+
+Implement a topic based, distributed, publish/subscribe system. A set of brokers collaborate to offer the pub/sub service to a set of clients. Published events must be causally ordered within the topic they were addressed to. Assume that the number of publish is much greater than the number of subscribe and choose the best topology for the brokers network. Assume reliable nodes but allow brokers and clients to join and leave the network. For links, you can use TCP and assume it realizes reliable point-to-point connections or you can use UDP (unicast or multicast) and manage reliability yourself. In OmNeT++ you can assume reliable links.
+
+Implement the system in Java or in OmNet++. Measure the performance of the system in terms of transmission latency and traffic generated for subscribing and publishing under different scenarios (different number of brokers, different network conditions, etc.)
